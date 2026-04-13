@@ -1783,33 +1783,43 @@ MKD.lc_mgmt_only={t:"생활관리만 (1명)",rows:[
   {d:"관리만",title:"민서준 (대원고 3학년) · 체대입시 · 수업 없이 관리만 진행"}]};
 
 // ═══ CONSULTATION LIVE DATA ═══
-const CONSULT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTkhoxBJ9ykp_z2faHs6ezr01w8c7V3SGlJNxgmJShC5W3E0Olld1C7EUej1eFtPBX3bWmPtDw6LvFy/pub?output=csv';
+const CONSULT_URLS = [
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTkhoxBJ9ykp_z2faHs6ezr01w8c7V3SGlJNxgmJShC5W3E0Olld1C7EUej1eFtPBX3bWmPtDw6LvFy/pub?output=csv',
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTkhoxBJ9ykp_z2faHs6ezr01w8c7V3SGlJNxgmJShC5W3E0Olld1C7EUej1eFtPBX3bWmPtDw6LvFy/pub?gid=0&single=true&output=csv'
+];
 let consultData = [];
 let consultFilter = 'all';
+let consultLoaded = false;
 
 async function loadConsult() {
-  try {
-    const res = await fetch(CONSULT_CSV);
-    const text = await res.text();
-    const rows = parseCSV(text);
-    if (rows.length < 2) return;
-    const header = rows[0];
-    consultData = rows.slice(1).filter(r => r[0] && r[0].trim()).map(r => ({
-      date: r[0]||'', name: r[1]||'', phone: r[2]||'',
-      campus: r[3]||'', type: r[4]||'', wishDate: r[5]||'',
-      time: r[6]||'', source: r[7]||'', status: r[8]||'',
-      visited: (r[9]||'').toUpperCase()==='TRUE', result: r[10]||''
-    }));
-    // 최신순 정렬
-    consultData.sort((a,b) => b.date.localeCompare(a.date));
-    // 배지 업데이트
-    document.getElementById('consult-badge').textContent = consultData.length;
-    renderConsult();
-    console.log('✅ 상담현황 로드 (' + consultData.length + '건)');
-  } catch(e) {
-    console.warn('상담현황 로드 실패:', e);
-    document.getElementById('cs-tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:#D63031">데이터 로드 실패 — 시트 공유 설정을 확인하세요</td></tr>';
+  if (consultLoaded && consultData.length > 0) { renderConsult(); return; }
+  const el = document.getElementById('cs-tbody');
+  if(el) el.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--mu)">⏳ 구글시트에서 데이터 로딩 중...</td></tr>';
+
+  for (const url of CONSULT_URLS) {
+    try {
+      console.log('상담 데이터 시도:', url.substring(0,60)+'...');
+      const res = await fetch(url);
+      if (!res.ok) { console.warn('HTTP', res.status); continue; }
+      const text = await res.text();
+      if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) { console.warn('HTML 반환됨, 다음 URL 시도'); continue; }
+      const rows = parseCSV(text);
+      if (rows.length < 2) { console.warn('행 부족:', rows.length); continue; }
+      consultData = rows.slice(1).filter(r => r[0] && r[0].trim()).map(r => ({
+        date: r[0]||'', name: r[1]||'', phone: r[2]||'',
+        campus: r[3]||'', type: r[4]||'', wishDate: r[5]||'',
+        time: r[6]||'', source: r[7]||'', status: r[8]||'',
+        visited: (r[9]||'').toUpperCase()==='TRUE', result: r[10]||''
+      }));
+      consultData.sort((a,b) => b.date.localeCompare(a.date));
+      document.getElementById('consult-badge').textContent = consultData.length;
+      consultLoaded = true;
+      renderConsult();
+      console.log('✅ 상담현황 로드 성공 (' + consultData.length + '건)');
+      return;
+    } catch(e) { console.warn('시도 실패:', e.message); }
   }
+  if(el) el.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:30px"><div style="color:#D63031;font-weight:700;margin-bottom:8px">데이터 로드 실패</div><div style="font-size:11px;color:var(--mu)">구글시트 → 파일 → 공유 → 웹에 게시 → CSV 형식으로 게시했는지 확인<br>그리고 공유 → 링크가 있는 모든 사용자 → 뷰어로 설정했는지 확인</div></td></tr>';
 }
 
 function renderConsult() {
