@@ -192,8 +192,10 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
   .topbar{padding:0 14px;height:44px}
   .content{padding:12px 14px}
   .content-wrap{flex-direction:column}
-  .act-panel{width:100%;border-left:none;border-top:1px solid var(--bd);flex-direction:row;flex-wrap:wrap;overflow-x:auto}
-  .act-item{min-width:160px;flex:1}
+  .act-panel{width:100%;border-left:none;border-top:1px solid var(--bd);flex-direction:column;flex-wrap:nowrap;overflow-x:visible;order:-1}
+  .act-item{min-width:auto;flex:none}
+  #panel-body{display:none}
+  #panel-tog{display:block!important}
   .g2,.g3,.g4{grid-template-columns:1fr!important}
   .kc{padding:12px}
   .kv{font-size:18px}
@@ -1201,8 +1203,12 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
     </div><!-- /content -->
 
     <!-- ACTIVITY PANEL -->
-    <div class="act-panel">
-      <div class="act-head"><div class="act-title">빠른 현황</div></div>
+    <div class="act-panel" id="act-panel">
+      <div class="act-head" style="display:flex;align-items:center;justify-content:space-between">
+        <div class="act-title">빠른 현황</div>
+        <button onclick="togglePanel()" id="panel-tog" style="display:none;border:none;background:var(--pl);color:var(--p);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">접기 ▲</button>
+      </div>
+      <div id="panel-body">
       <div class="act-item">
         <div class="act-lbl">팀무광진 · 4월</div>
         <div class="act-num">565만원</div>
@@ -1234,6 +1240,7 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
         <div class="act-lbl">1~3월 합산 순수익</div>
         <div class="act-num txt-p">+2,929만원</div>
         <div class="act-sub">리체 2,160 · 광진 -924 · 강동 1,695</div>
+      </div>
       </div>
     </div>
 
@@ -1679,6 +1686,19 @@ MKD.lc_eng_only={t:"영어만 수강 (1명)",rows:[
   {d:"영어만",title:"안시연 (선화예고 2학년) · 김하류T 영어 · 음대입시"}]};
 MKD.lc_mgmt_only={t:"생활관리만 (1명)",rows:[
   {d:"관리만",title:"민서준 (대원고 3학년) · 체대입시 · 수업 없이 관리만 진행"}]};
+
+// PANEL TOGGLE (mobile)
+function togglePanel(){
+  const body=document.getElementById('panel-body');
+  const btn=document.getElementById('panel-tog');
+  if(body.style.display==='none'||!body.style.display||getComputedStyle(body).display==='none'){
+    body.style.display='block';
+    btn.textContent='접기 ▲';
+  } else {
+    body.style.display='none';
+    btn.textContent='빠른 현황 펼치기 ▼';
+  }
+}
 
 // MARKETING TAB SWITCH
 function swMkt(t,btn){
