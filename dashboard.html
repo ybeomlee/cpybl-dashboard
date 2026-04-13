@@ -670,7 +670,18 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
     <div class="exp-sec">고정지출</div>
     <div class="exp-row" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="exp-name" style="font-weight:700">▸ 강사지출</div><div class="exp-prev">15,690,618</div><div class="exp-curr">15,420,000</div><div class="exp-diff d-dn">▼ 270,618</div></div>
     <div style="display:none;padding:4px 0 4px 16px;border-bottom:1px solid #F9FAFB;font-size:11px;color:var(--mu)">
-      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">강사 인건비</div><div class="exp-prev">15,512,680</div><div class="exp-curr">14,818,088</div><div class="exp-diff d-dn">▼694,592</div></div>
+      <div style="padding:3px 0;font-size:9.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px">강사 (정규)</div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">이충환T (국어)</div><div class="exp-prev">-</div><div class="exp-curr">약 4,200,000</div><div class="exp-diff d-na">정규</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">정원교T (국어)</div><div class="exp-prev">-</div><div class="exp-curr">약 3,800,000</div><div class="exp-diff d-na">정규</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">김하류T (영어)</div><div class="exp-prev">-</div><div class="exp-curr">약 3,500,000</div><div class="exp-diff d-na">정규</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">박동근T (영어)</div><div class="exp-prev">-</div><div class="exp-curr">약 2,200,000</div><div class="exp-diff d-na">정규</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">김진홍T (국어)</div><div class="exp-prev">-</div><div class="exp-curr">약 1,118,088</div><div class="exp-diff d-na">정규</div></div>
+      <div style="padding:3px 0;font-size:9.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">상담/관리</div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">박수연T (상담)</div><div class="exp-prev">-</div><div class="exp-curr">포함</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">박예은·이유정·김서연T</div><div class="exp-prev">-</div><div class="exp-curr">포함</div><div class="exp-diff d-na">-</div></div>
+      <div style="padding:3px 0;font-size:9.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">합계</div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--bk);font-weight:700">강사 인건비 합계</div><div class="exp-prev">15,512,680</div><div class="exp-curr">14,818,088</div><div class="exp-diff d-dn">▼694,592</div></div>
+      <div style="padding:3px 0;font-size:9.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">기타</div>
       <div class="exp-row"><div class="exp-name" style="color:var(--mu)">sk브로드밴드</div><div class="exp-prev">12,063</div><div class="exp-curr">14,068</div><div class="exp-diff d-up">▲2,005</div></div>
       <div class="exp-row"><div class="exp-name" style="color:var(--mu)">복합기(NICEPAY)</div><div class="exp-prev">117,348</div><div class="exp-curr">81,835</div><div class="exp-diff d-dn">▼35,513</div></div>
     </div>
@@ -750,52 +761,62 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
 <!-- ══ 개인지출 ══ -->
 <div class="pg" id="pg-personal">
 <div class="stt">개인 지출</div>
-<div class="sts">이윤범 · 김아란 — 2026년 4월 예상 지출 기준 (1월 실적 기반 추정)</div>
+<div class="sts">이윤범 · 김아란 — 전월(1월) → 금월(2월) 비교</div>
 <div class="g2 mb16">
   <div class="card">
-    <div class="ch"><div><div class="ct">이윤범 (2026년 4월)</div><div class="csm">예상 지출 약 5,820,000원</div></div><div style="font-size:20px;font-weight:900;color:var(--p)">~5,820,000원</div></div>
-    <div class="exp-sec">고정지출 (확정)</div>
-    <div class="exp-row"><div class="exp-name">보험 (국민·현대·삼성화재)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">287,420</div></div>
-    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">국민카드 자동이체 · 3종 보험료</div>
-    <div class="exp-row"><div class="exp-name">통신 (SKT · LG)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">185,190</div></div>
-    <div class="exp-row"><div class="exp-name">이자 (카카오페이)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">685,456</div></div>
-    <div class="exp-row"><div class="exp-name">할부 청구 (농구골대 등)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">4,176,000</div></div>
-    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">삼성카드 5개월 할부 · 4월 만기</div>
-    <div class="exp-sec">일반지출 (추정)</div>
-    <div class="exp-row"><div class="exp-name">외식·식대</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 430,000</div></div>
-    <div class="exp-row"><div class="exp-name">교통 (주유·도로)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 410,000</div></div>
-    <div class="exp-row"><div class="exp-name">쿠팡 소모품 (육아·생활)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 600,000</div></div>
-    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">기저귀·분유·생활용품 등 (1월 대비 감소 추정)</div>
-    <div class="exp-row"><div class="exp-name">개인쇼핑 · 기타</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 380,000</div></div>
-    <div style="margin-top:8px;padding:8px 10px;background:var(--plb);border-radius:8px;font-size:10.5px;color:var(--mu)">
-      ※ 4월 할부 청구액(4,176,000원) 포함 · 1월 실적(6,306,873원) 대비 할부 비중 증가
+    <div class="ch"><div class="ct">이윤범</div><div style="display:flex;gap:6px;font-size:10px"><span style="color:var(--mu)">1월</span><span style="font-weight:700">2월</span></div></div>
+    <div class="exp-sec">고정지출</div>
+    <div class="exp-row"><div class="exp-name">보험 (3종)</div><div class="exp-prev">287,420</div><div class="exp-curr">287,420</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">통신 (SKT·LG)</div><div class="exp-prev">185,190</div><div class="exp-curr">185,190</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">이자 (카카오페이)</div><div class="exp-prev">685,456</div><div class="exp-curr">685,456</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-sec">대출이자</div>
+    <div class="exp-row"><div class="exp-name">대출이자 합계</div><div class="exp-prev">4,015,291</div><div class="exp-curr">3,519,484</div><div class="exp-diff d-dn">▼ 495,807</div></div>
+    <div class="exp-sec">일반지출</div>
+    <div class="exp-row" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="exp-name" style="font-weight:700">▸ 일반지출 합계</div><div class="exp-prev">3,620,872</div><div class="exp-curr">미입력</div><div class="exp-diff d-na">-</div></div>
+    <div style="display:none;padding:4px 0 4px 16px;font-size:11px;color:var(--mu)">
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">쿠팡 (식품·생활·육아)</div><div class="exp-prev">약 1,600,000</div><div class="exp-curr">-</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">쿠팡이츠 (외식)</div><div class="exp-prev">약 430,000</div><div class="exp-curr">-</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">주유·교통</div><div class="exp-prev">약 410,000</div><div class="exp-curr">-</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">개인쇼핑 (네이버·곰방대 등)</div><div class="exp-prev">약 580,000</div><div class="exp-curr">-</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">APPLE·구독</div><div class="exp-prev">약 35,000</div><div class="exp-curr">-</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">경조사·기타</div><div class="exp-prev">약 30,000</div><div class="exp-curr">-</div><div class="exp-diff d-na">-</div></div>
+      <div style="padding:4px 0;font-size:10px;color:#D63031">※ 2월 일반지출 미입력 상태</div>
+    </div>
+    <div style="margin-top:8px;padding:8px 10px;background:var(--plb);border-radius:8px;font-size:11px;display:flex;justify-content:space-between">
+      <span style="color:var(--mu)">1월 합계 10,322,164</span><span style="font-weight:700;color:var(--p)">2월 합계 4,677,550 (대출만)</span>
     </div>
   </div>
   <div class="card">
-    <div class="ch"><div><div class="ct">김아란 (2026년 4월)</div><div class="csm">예상 지출 약 2,980,000원</div></div><div style="font-size:20px;font-weight:900;color:var(--p2)">~2,980,000원</div></div>
-    <div class="exp-sec">고정지출 (확정)</div>
-    <div class="exp-row"><div class="exp-name">SKT 통신료</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">88,420</div></div>
-    <div class="exp-row"><div class="exp-name">카카오페이 이자</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">934,426</div></div>
-    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">국민아란통장 자동이체 · 월 934,426원</div>
-    <div class="exp-row"><div class="exp-name">보험 4종 (DB·KB·삼성·현대)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">233,826</div></div>
-    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">DB화재 80,000 / KB생명 62,300 / 삼성 54,800 / 현대 36,726</div>
-    <div class="exp-row"><div class="exp-name">넷플릭스</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">22,000</div></div>
-    <div class="exp-row"><div class="exp-name">아파트 관리비</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">355,810</div></div>
-    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">하남 아파트 · 아란삼성카드 자동이체</div>
-    <div class="exp-sec">일반지출 (추정)</div>
-    <div class="exp-row"><div class="exp-name">외식</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 200,000</div></div>
-    <div class="exp-row"><div class="exp-name">의료 (산부인과 등)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 120,000</div></div>
-    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">정기 검진 · 약국 포함</div>
-    <div class="exp-row"><div class="exp-name">육아·식자재·생활</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 250,000</div></div>
-    <div class="exp-row"><div class="exp-name">개인쇼핑 · 기타</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 280,000</div></div>
-    <div style="margin-top:8px;padding:8px 10px;background:var(--plb);border-radius:8px;font-size:10.5px;color:var(--mu)">
-      ※ 4월은 여행비 없음 · 1월(4,031,137원) 대비 약 1,051,137원 감소 추정
+    <div class="ch"><div class="ct">김아란</div><div style="display:flex;gap:6px;font-size:10px"><span style="color:var(--mu)">1월</span><span style="font-weight:700">2월</span></div></div>
+    <div class="exp-sec">고정지출</div>
+    <div class="exp-row"><div class="exp-name">SKT 통신료</div><div class="exp-prev">88,420</div><div class="exp-curr">87,900</div><div class="exp-diff d-dn">▼ 520</div></div>
+    <div class="exp-row"><div class="exp-name">카카오페이 이자</div><div class="exp-prev">934,426</div><div class="exp-curr">934,426</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">보험 4종</div><div class="exp-prev">233,826</div><div class="exp-curr">233,826</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">넷플릭스</div><div class="exp-prev">22,000</div><div class="exp-curr">22,000</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">아파트 관리비</div><div class="exp-prev">355,810</div><div class="exp-curr">439,680</div><div class="exp-diff d-up">▲ 83,870</div></div>
+    <div class="exp-sec">일반지출</div>
+    <div class="exp-row" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="exp-name" style="font-weight:700">▸ 일반지출 합계</div><div class="exp-prev">2,396,655</div><div class="exp-curr">1,257,446</div><div class="exp-diff d-dn">▼ 1,139,209</div></div>
+    <div style="display:none;padding:4px 0 4px 16px;font-size:11px;color:var(--mu)">
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">외식</div><div class="exp-prev">231,100</div><div class="exp-curr">277,120</div><div class="exp-diff d-up">▲46,020</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">개인쇼핑</div><div class="exp-prev">180,250</div><div class="exp-curr">170,541</div><div class="exp-diff d-dn">▼9,709</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">식자재</div><div class="exp-prev">133,321</div><div class="exp-curr">96,180</div><div class="exp-diff d-dn">▼37,141</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">의료 (산부인과)</div><div class="exp-prev">136,680</div><div class="exp-curr">62,900</div><div class="exp-diff d-dn">▼73,780</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">육아</div><div class="exp-prev">0</div><div class="exp-curr">344,900</div><div class="exp-diff d-up">▲344,900</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">경조사</div><div class="exp-prev">0</div><div class="exp-curr">179,100</div><div class="exp-diff d-up">▲179,100</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">여행</div><div class="exp-prev" style="color:#D63031;font-weight:700">1,338,654</div><div class="exp-curr">40,000</div><div class="exp-diff d-dn">▼1,298,654</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">교통</div><div class="exp-prev">63,000</div><div class="exp-curr">2,400</div><div class="exp-diff d-dn">▼60,600</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">문화</div><div class="exp-prev">4,900</div><div class="exp-curr">35,505</div><div class="exp-diff d-up">▲30,605</div></div>
+    </div>
+    <div style="margin-top:8px;padding:8px 10px;background:var(--plb);border-radius:8px;font-size:11px;display:flex;justify-content:space-between">
+      <span style="color:var(--mu)">1월 합계 4,031,137</span><span style="font-weight:700;color:var(--p)">2월 합계 2,975,278 (▼1,055,859)</span>
     </div>
   </div>
 </div>
-<div class="card">
-  <div class="ch"><div class="ct">전체 순수익 (사업 + 개인대출 포함)</div></div>
-  <div class="g3">
+
+<!-- 전체 순수익 -->
+<div class="card mb16">
+  <div class="ch"><div class="ct">전체 순수익 (사업 + 개인 포함)</div></div>
+  <div class="g3 mb12">
     <div style="text-align:center;padding:14px;border-radius:10px;background:#FFF0ED;border:1px solid #FECACA">
       <div style="font-size:10px;color:var(--mu)">2026년 1월</div><div style="font-size:22px;font-weight:900;color:#D63031">-4,183,546원</div>
     </div>
@@ -803,10 +824,41 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
       <div style="font-size:10px;color:var(--mu)">2026년 2월</div><div style="font-size:22px;font-weight:900;color:#D63031">-2,857,324원</div>
     </div>
     <div style="text-align:center;padding:14px;border-radius:10px;background:var(--plb);border:1px solid var(--pl)">
-      <div style="font-size:10px;color:var(--mu)">2026년 3월</div><div style="font-size:22px;font-weight:900;color:var(--p)">+18,420,568원</div>
+      <div style="font-size:10px;color:var(--mu)">2026년 3월</div><div style="font-size:22px;font-weight:900;color:#4A00E0">+18,420,568원</div>
       <div style="font-size:9.5px;color:var(--mu)">강동 시즌</div>
     </div>
   </div>
+</div>
+
+<!-- 수입/지출 상세 -->
+<div class="card mb16">
+  <div class="ch"><div class="ct">월별 수입·지출 상세 내역</div><div class="csm">클릭하여 펼치기</div></div>
+  <div style="overflow-x:auto"><table class="tbl">
+    <tr><th>구분</th><th class="r">1월</th><th class="r">2월</th><th class="r">3월</th></tr>
+    <tr style="background:var(--plb)"><td colspan="4" style="font-weight:800;color:var(--bk)">수입</td></tr>
+    <tr><td>리체학원 매출</td><td class="r">24,594,875</td><td class="r">21,548,125</td><td class="r">19,102,500</td></tr>
+    <tr><td>리체스카 매출</td><td class="r">6,863,000</td><td class="r">6,592,500</td><td class="r">5,407,500</td></tr>
+    <tr><td>팀무광진 매출</td><td class="r">11,510,000</td><td class="r">9,735,000</td><td class="r">15,707,800</td></tr>
+    <tr><td>팀무강동 매출</td><td class="r">17,990,000</td><td class="r">11,157,000</td><td class="r">39,327,000</td></tr>
+    <tr class="tf"><td style="color:#4A00E0">수입 합계</td><td class="r" style="color:#4A00E0;font-weight:900">60,957,875</td><td class="r" style="color:#4A00E0;font-weight:900">49,032,625</td><td class="r" style="color:#4A00E0;font-weight:900">79,544,800</td></tr>
+
+    <tr style="background:#FFF0ED"><td colspan="4" style="font-weight:800;color:#D63031">지출 — 캠퍼스</td></tr>
+    <tr><td style="cursor:pointer;font-weight:600" onclick="this.parentElement.nextElementSibling.style.display=this.parentElement.nextElementSibling.style.display==='none'?'table-row':'none'">▸ 리체학원 지출</td><td class="r">20,395,193</td><td class="r">21,470,840</td><td class="r">20,646,592</td></tr>
+    <tr style="display:none"><td colspan="4" style="padding:4px 20px;font-size:11px;color:var(--mu)">고정 3,391,300 + 강사 16,754,104 + 일반 249,789 (1월 기준)</td></tr>
+    <tr><td style="cursor:pointer;font-weight:600" onclick="this.parentElement.nextElementSibling.style.display=this.parentElement.nextElementSibling.style.display==='none'?'table-row':'none'">▸ 팀무광진 지출</td><td class="r">18,039,344</td><td class="r">13,171,521</td><td class="r">14,986,769</td></tr>
+    <tr style="display:none"><td colspan="4" style="padding:4px 20px;font-size:11px;color:var(--mu)">고정 4,297,046 + 강사 11,204,066 + 일반 2,538,232 (1월 기준)</td></tr>
+    <tr><td style="cursor:pointer;font-weight:600" onclick="this.parentElement.nextElementSibling.style.display=this.parentElement.nextElementSibling.style.display==='none'?'table-row':'none'">▸ 팀무강동 지출</td><td class="r">16,384,720</td><td class="r">13,728,104</td><td class="r">21,415,346</td></tr>
+    <tr style="display:none"><td colspan="4" style="padding:4px 20px;font-size:11px;color:var(--mu)">고정 4,593,261 + 강사 10,459,889 + 일반 1,331,570 (1월 기준)</td></tr>
+
+    <tr style="background:#FFF0ED"><td colspan="4" style="font-weight:800;color:#D63031">지출 — 개인</td></tr>
+    <tr><td>이윤범 개인 (고정+일반)</td><td class="r">6,306,873</td><td class="r">미입력</td><td class="r">미입력</td></tr>
+    <tr><td>이윤범 대출이자</td><td class="r">4,015,291</td><td class="r">3,519,484</td><td class="r">4,075,525</td></tr>
+    <tr><td>김아란 개인 (고정+일반)</td><td class="r">4,031,137</td><td class="r">2,975,278</td><td class="r">1,190,252</td></tr>
+    <tr class="tf"><td style="color:#D63031">지출 합계</td><td class="r" style="color:#D63031;font-weight:900">69,172,558</td><td class="r" style="color:#D63031;font-weight:900">54,865,227</td><td class="r" style="color:#D63031;font-weight:900">62,314,484</td></tr>
+
+    <tr style="background:var(--plb)"><td colspan="4"></td></tr>
+    <tr class="tf"><td style="font-size:14px">전체 순수익</td><td class="r txt-loss" style="font-size:14px">-4,183,546</td><td class="r txt-loss" style="font-size:14px">-2,857,324</td><td class="r txt-profit" style="font-size:14px">+18,420,568</td></tr>
+  </table></div>
 </div>
 </div><!-- /personal -->
 
