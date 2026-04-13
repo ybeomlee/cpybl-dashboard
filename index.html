@@ -231,7 +231,7 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
   <button class="ni" id="ni-gj" onclick="go(this,'gj','팀무광진','2026-04 현황')"><span class="ni-ic">◈</span>팀무광진<span class="ni-bd">25</span></button>
   <button class="ni" id="ni-gd" onclick="go(this,'gd','팀무강동','2026-03 현황')"><span class="ni-ic">◈</span>팀무강동<span class="ni-bd">144</span></button>
   <button class="ni" id="ni-lc" onclick="go(this,'lc','리드체인지','2026-04 현황')"><span class="ni-ic">◈</span>리드체인지<span class="ni-bd">40</span></button>
-  <button class="ni" id="ni-consult" onclick="go(this,'consult','상담 현황','실시간');consultLoaded=false;loadConsult()"><span class="ni-ic">☎</span>상담 현황<span class="ni-bd" id="consult-badge">-</span></button>
+  <button class="ni" id="ni-consult" onclick="go(this,'consult','상담 현황','실시간');refreshConsult()"><span class="ni-ic">☎</span>상담 현황<span class="ni-bd" id="consult-badge">-</span></button>
   <div class="sb-sec">결산</div>
   <button class="ni" id="ni-profit" onclick="go(this,'profit','순수익 현황','2024~2026 비교')"><span class="ni-ic">↑</span>순수익 현황</button>
   <button class="ni" id="ni-expense" onclick="go(this,'expense','지출 내역','전월 대비')"><span class="ni-ic">≡</span>지출 내역</button>
@@ -1732,55 +1732,8 @@ function drawLcPies(){
   mkChart("lc-mgmt-pie",{type:"doughnut",data:{labels:["생활관리 O","생활관리 X"],datasets:[{data:[28,12],backgroundColor:["#4A00E0","#E5E7EB"],borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,cutout:"55%",plugins:{legend:{display:false}}}});
 }
 
-// LC ENROLLMENT MODAL DATA
-MKD.lc_kor_eng_mgmt={t:"국어 + 영어 + 생활관리 (18명)",rows:[
-  {d:"풀패키지",title:"김서연 (휘경여고 3학년) · 정원교T 국어 / 박동근T 영어 · 이유정T 관리"},
-  {d:"풀패키지",title:"우지원 (배재고 2학년) · 이충환T 국어 / 김하류T 영어 · 이유정T 관리"},
-  {d:"풀패키지",title:"이현준 (잠실고 3학년) · 이충환T 국어 · 체대입시"},
-  {d:"풀패키지",title:"나예준 (광양고 2학년) · 정원교T 국어 / 박동근T 영어 · 민서인T 관리"},
-  {d:"풀패키지",title:"이다영 (동산고 2학년) · 정원교T 국어 · 김동은T 관리"},
-  {d:"풀패키지",title:"김민주 (영파여고 2학년) · 정원교T 국어 / 김하류T 영어 · 박수연T 관리"},
-  {d:"풀패키지",title:"류승한 (건대부고 2학년) · 정원교T 국어 · 민서인T 관리"},
-  {d:"풀패키지",title:"함준서 (대원고 2학년) · 이충환T 국어 / 김하류T 영어 · 박지원T 관리"},
-  {d:"풀패키지",title:"유용진 (자양고 2학년) · 이충환T 국어 / 김하류T 영어 · 박수연T 관리"},
-  {d:"풀패키지",title:"권은주 (광남고 2학년) · 정원교T 국어 / 김하류T 영어 · 공지민T 관리"},
-  {d:"풀패키지",title:"이준혁 (광양고 2학년) · 이충환T 국어 / 김하류T 영어 · 박지원T 관리"},
-  {d:"풀패키지",title:"김범수 (대원고 3학년) · 이충환T 국어 / 김하류T 영어 · 박지원T 관리"},
-  {d:"풀패키지",title:"이지안 (휘경여고 3학년) · 이충환T 국어 / 김하류T 영어 · 박수연T 관리"},
-  {d:"풀패키지",title:"김태림 (건대부고 3학년) · 정원교T 국어 / 김하류T 영어 · 박예은T 관리"},
-  {d:"풀패키지",title:"이다영 (동산고 3학년) · 박예은T 관리"},
-  {d:"풀패키지",title:"정유찬 (대원고 3학년) · 이충환T 국어 / 김하류T 영어 · 박수연T 관리"},
-  {d:"풀패키지",title:"이재민 (무학여고 N수) · 정원교T 국어 / 김하류T 영어 · 박수연T 관리"},
-  {d:"풀패키지",title:"한지유 (진관고 N수) · 정원교T 국어 / 박동근T 영어"}]};
-MKD.lc_kor_eng={t:"국어 + 영어 (7명)",rows:[
-  {d:"두과목",title:"김주완 (잠실고 2학년) · 이충환T 국어 / 김하류T 영어"},
-  {d:"두과목",title:"황다현 (동대부여고 2학년) · 이충환T 국어 / 김하류T 영어"},
-  {d:"두과목",title:"김준우 (광양고 2학년) · 정원교T 국어 / 김하류T 영어"},
-  {d:"두과목",title:"서지아 (선화예고 2학년) · 이충환T 국어 / 김하류T 영어"},
-  {d:"두과목",title:"박흥주 (광양고 3학년) · 정원교T 국어 / 김하류T 영어"},
-  {d:"두과목",title:"원호연 (자양고 3학년) · 정원교T 국어 / 김하류T 영어"},
-  {d:"두과목",title:"홍제휘 (신현고 N수) · 김진홍T 국어 / 박동근T 영어"}]};
-MKD.lc_kor_mgmt={t:"국어 + 생활관리 (6명)",rows:[
-  {d:"국어+관리",title:"김예준 (자양고 1학년) · 이충환T 국어 · 민서인T 관리"},
-  {d:"국어+관리",title:"박민서 (선화예고 2학년) · 이충환T 국어"},
-  {d:"국어+관리",title:"조예진 (덕원예고 3학년) · 이충환T 국어 · 박지원T 관리"},
-  {d:"국어+관리",title:"김준호 (서울사대부고 3학년) · 이충환T 국어 · 박수연T 관리"},
-  {d:"국어+관리",title:"전재형 (선화예고 3학년) · 이충환T 국어 · 김서연T 관리"},
-  {d:"국어+관리",title:"김세헌 (영동고 3학년) · 이충환T 국어 · 박수연T 관리"}]};
-MKD.lc_eng_mgmt={t:"영어 + 생활관리 (4명)",rows:[
-  {d:"영어+관리",title:"오시영 (선화예고 1학년) · 김하류T 영어 · 박수연T 관리"},
-  {d:"영어+관리",title:"한수민 (선화예고 3학년) · 김하류T 영어 · 박예은T 관리"},
-  {d:"영어+관리",title:"박수린 (한국삼육고 2학년) · 김하류T 영어 · 박수연T 관리"},
-  {d:"영어+관리",title:"윤도웅 (청량고 2학년) · 김하류T 영어 · 박지원T 관리"}]};
-
-MKD.lc_kor_only={t:"국어만 수강 (3명)",rows:[
-  {d:"국어만",title:"안지민 (자양고 1학년) · 정원교T 국어 · 미대입시"},
-  {d:"국어만",title:"김보민 (동대부여고 2학년) · 정원교T 국어 · 미대입시"},
-  {d:"국어만",title:"박주희 (배화여고 2학년) · 정원교T 국어 · 미대입시"}]};
-MKD.lc_eng_only={t:"영어만 수강 (1명)",rows:[
-  {d:"영어만",title:"안시연 (선화예고 2학년) · 김하류T 영어 · 음대입시"}]};
-MKD.lc_mgmt_only={t:"생활관리만 (1명)",rows:[
-  {d:"관리만",title:"민서준 (대원고 3학년) · 체대입시 · 수업 없이 관리만 진행"}]};
+// 상담현황 새로고침 (onclick에서 호출)
+function refreshConsult(){ consultLoaded=false; loadConsult(); }
 
 // ═══ CONSULTATION LIVE DATA ═══
 const CONSULT_URLS = [
@@ -1796,6 +1749,12 @@ async function loadConsult() {
   if (consultLoaded && consultData.length > 0) { renderConsult(); return; }
   const el = document.getElementById('cs-tbody');
   if(el) el.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--mu)">⏳ 구글시트에서 데이터 로딩 중...</td></tr>';
+
+  // file:// 에서는 fetch 불가 안내
+  if (location.protocol === 'file:') {
+    if(el) el.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:30px"><div style="color:#D63031;font-weight:700;margin-bottom:8px">로컬 파일(file://)에서는 구글시트 연동이 불가합니다</div><div style="font-size:11px;color:var(--mu)">GitHub Pages (<b>https://ybeomlee.github.io/cpybl-dashboard/</b>) 에서 확인하세요<br>또는 Ctrl+Shift+R 후 다시 시도</div></td></tr>';
+    return;
+  }
 
   for (let url of CONSULT_URLS) {
     try {
@@ -2052,6 +2011,55 @@ const MKD={
     {d:"2026-02-09",title:"실기만 하다 놓치기 쉬운 고2 예체능 수능 영어 전략"},
     {d:"2026-02-04",title:"입시의 성패를 가르는 2월, '학습 루틴'이 합격을 만듭니다"}]}
 };
+
+// LC ENROLLMENT MODAL DATA
+MKD.lc_kor_eng_mgmt={t:"국어 + 영어 + 생활관리 (18명)",rows:[
+  {d:"풀패키지",title:"김서연 (휘경여고 3학년) · 정원교T 국어 / 박동근T 영어 · 이유정T 관리"},
+  {d:"풀패키지",title:"우지원 (배재고 2학년) · 이충환T 국어 / 김하류T 영어 · 이유정T 관리"},
+  {d:"풀패키지",title:"이현준 (잠실고 3학년) · 이충환T 국어 · 체대입시"},
+  {d:"풀패키지",title:"나예준 (광양고 2학년) · 정원교T 국어 / 박동근T 영어 · 민서인T 관리"},
+  {d:"풀패키지",title:"이다영 (동산고 2학년) · 정원교T 국어 · 김동은T 관리"},
+  {d:"풀패키지",title:"김민주 (영파여고 2학년) · 정원교T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"류승한 (건대부고 2학년) · 정원교T 국어 · 민서인T 관리"},
+  {d:"풀패키지",title:"함준서 (대원고 2학년) · 이충환T 국어 / 김하류T 영어 · 박지원T 관리"},
+  {d:"풀패키지",title:"유용진 (자양고 2학년) · 이충환T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"권은주 (광남고 2학년) · 정원교T 국어 / 김하류T 영어 · 공지민T 관리"},
+  {d:"풀패키지",title:"이준혁 (광양고 2학년) · 이충환T 국어 / 김하류T 영어 · 박지원T 관리"},
+  {d:"풀패키지",title:"김범수 (대원고 3학년) · 이충환T 국어 / 김하류T 영어 · 박지원T 관리"},
+  {d:"풀패키지",title:"이지안 (휘경여고 3학년) · 이충환T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"김태림 (건대부고 3학년) · 정원교T 국어 / 김하류T 영어 · 박예은T 관리"},
+  {d:"풀패키지",title:"이다영 (동산고 3학년) · 박예은T 관리"},
+  {d:"풀패키지",title:"정유찬 (대원고 3학년) · 이충환T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"이재민 (무학여고 N수) · 정원교T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"한지유 (진관고 N수) · 정원교T 국어 / 박동근T 영어"}]};
+MKD.lc_kor_eng={t:"국어 + 영어 (7명)",rows:[
+  {d:"두과목",title:"김주완 (잠실고 2학년) · 이충환T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"황다현 (동대부여고 2학년) · 이충환T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"김준우 (광양고 2학년) · 정원교T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"서지아 (선화예고 2학년) · 이충환T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"박흥주 (광양고 3학년) · 정원교T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"원호연 (자양고 3학년) · 정원교T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"홍제휘 (신현고 N수) · 김진홍T 국어 / 박동근T 영어"}]};
+MKD.lc_kor_mgmt={t:"국어 + 생활관리 (6명)",rows:[
+  {d:"국어+관리",title:"김예준 (자양고 1학년) · 이충환T 국어 · 민서인T 관리"},
+  {d:"국어+관리",title:"박민서 (선화예고 2학년) · 이충환T 국어"},
+  {d:"국어+관리",title:"조예진 (덕원예고 3학년) · 이충환T 국어 · 박지원T 관리"},
+  {d:"국어+관리",title:"김준호 (서울사대부고 3학년) · 이충환T 국어 · 박수연T 관리"},
+  {d:"국어+관리",title:"전재형 (선화예고 3학년) · 이충환T 국어 · 김서연T 관리"},
+  {d:"국어+관리",title:"김세헌 (영동고 3학년) · 이충환T 국어 · 박수연T 관리"}]};
+MKD.lc_eng_mgmt={t:"영어 + 생활관리 (4명)",rows:[
+  {d:"영어+관리",title:"오시영 (선화예고 1학년) · 김하류T 영어 · 박수연T 관리"},
+  {d:"영어+관리",title:"한수민 (선화예고 3학년) · 김하류T 영어 · 박예은T 관리"},
+  {d:"영어+관리",title:"박수린 (한국삼육고 2학년) · 김하류T 영어 · 박수연T 관리"},
+  {d:"영어+관리",title:"윤도웅 (청량고 2학년) · 김하류T 영어 · 박지원T 관리"}]};
+MKD.lc_kor_only={t:"국어만 수강 (3명)",rows:[
+  {d:"국어만",title:"안지민 (자양고 1학년) · 정원교T 국어 · 미대입시"},
+  {d:"국어만",title:"김보민 (동대부여고 2학년) · 정원교T 국어 · 미대입시"},
+  {d:"국어만",title:"박주희 (배화여고 2학년) · 정원교T 국어 · 미대입시"}]};
+MKD.lc_eng_only={t:"영어만 수강 (1명)",rows:[
+  {d:"영어만",title:"안시연 (선화예고 2학년) · 김하류T 영어 · 음대입시"}]};
+MKD.lc_mgmt_only={t:"생활관리만 (1명)",rows:[
+  {d:"관리만",title:"민서준 (대원고 3학년) · 체대입시 · 수업 없이 관리만 진행"}]};
 
 function showMktDetail(key){
   const d=MKD[key];if(!d)return;
