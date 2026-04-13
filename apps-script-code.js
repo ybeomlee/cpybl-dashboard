@@ -1,174 +1,274 @@
 // ========================================
-// 리드체인지 상담 예약 - Google Apps Script
+// 리드체인지 상담 예약 + 학생 명단 API
 // ========================================
 
 // ═══ 설정 ═══
-const RESERVE_SHEET = '뉴상담예약';  // 이 파일 안의 시트 (폼 데이터 저장)
-
-// 리체상담양식이 있는 구글시트 (별도 파일)
+const RESERVE_SHEET = '뉴상담예약';
 const CONSULT_FILE_ID = '1H3ttMuGs-kwHoaA6z4ApSo9kvQZPNA0EOu8OnwkI2u8';
 const CONSULT_SHEET = '리체상담양식';
-
-// 뉴상담예약 헤더 (A~N)
 const HEADERS = ['신청일시','이름','학교','학년','전공','연락처','보호자연락처','유입경로','검색어','희망날짜','상담시간','상태','방문완료','상담자'];
 
-// ═══ 폼에서 데이터 수신 ═══
+// 월별 운영시트 링크가 있는 시트 (pub CSV URL에서 가져옴)
+const LINK_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtFxvq0fYLGdn7A324uISyftJPX7AG2JnuSPCkH3_ydVXM3dnkPkJ2vkA0cVcRaqdCLTyLTOM_p-Yi/pub?output=csv';
+
+// ═══ POST: 상담 예약 폼 수신 ═══
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(RESERVE_SHEET);
-
-    if (!sheet) {
-      sheet = ss.insertSheet(RESERVE_SHEET);
-    }
-
-    // 1행 헤더
+    if (!sheet) sheet = ss.insertSheet(RESERVE_SHEET);
     if (!sheet.getRange('A1').getValue()) {
       sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
       sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
       sheet.setFrozenRows(1);
-      // M열 헤더 아래에 체크박스 데이터 유효성 설정은 데이터 입력 시 처리
     }
-
     const newRow = sheet.getLastRow() + 1;
-
-    // A~L열 데이터
     sheet.getRange(newRow, 1, 1, 12).setValues([[
       data.timestamp || new Date().toLocaleString('ko-KR'),
-      data.name || '',
-      data.school || '',
-      data.grade || '',
-      data.major || '',
-      data.phone || '',
-      data.parentPhone || '',
-      data.source || '',
-      data.keyword || '',
-      data.date || '',
-      data.time || '',
-      '예약대기'
+      data.name||'', data.school||'', data.grade||'', data.major||'',
+      data.phone||'', data.parentPhone||'', data.source||'', data.keyword||'',
+      data.date||'', data.time||'', '예약대기'
     ]]);
-
-    // M열: 체크박스 (빈 상태)
     sheet.getRange(newRow, 13).insertCheckboxes();
-
-    // N열: 상담자 (아직 비어있음 - 상담 완료 시 자동 입력)
     sheet.getRange(newRow, 14).setValue('');
+    return ContentService.createTextOutput(JSON.stringify({result:'success'})).setMimeType(ContentService.MimeType.JSON);
+  } catch(error) {
+    return ContentService.createTextOutput(JSON.stringify({result:'error',message:error.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ═══ GET: 학생 명단 API ═══
+function doGet(e) {
+  const action = (e && e.parameter && e.parameter.action) || 'status';
+
+  if (action === 'roster') {
+    return getRoster();
+  }
+  return ContentService.createTextOutput('리드체인지 API 정상 작동 중').setMimeType(ContentService.MimeType.TEXT);
+}
+
+// ═══ 학생 명단 가져오기 ═══
+function getRoster() {
+  try {
+    // 1. 링크 시트에서 최신 월의 URL 가져오기
+    const linkCsv = UrlFetchApp.fetch(LINK_CSV_URL).getContentText();
+    const linkRows = Utilities.parseCsv(linkCsv);
+
+    // 최신 월 찾기 (데이터가 있는 마지막 행)
+    let latestRow = null;
+    let latestMonth = '';
+    for (let i = linkRows.length - 1; i >= 1; i--) {
+      const month = (linkRows[i][0] || '').trim();
+      if (month && month.match(/^\d{4}-\d{2}$/) && linkRows[i][2]) {
+        latestRow = linkRows[i];
+        latestMonth = month;
+        break;
+      }
+    }
+
+    // 강동은 최신 월에 없을 수 있으니 별도 체크
+    let gangdongRow = latestRow;
+    if (!latestRow[3]) {
+      // 강동 URL이 비어있으면 이전 월에서 찾기
+      for (let i = linkRows.length - 1; i >= 1; i--) {
+        if (linkRows[i][3] && linkRows[i][3].trim()) {
+          gangdongRow = linkRows[i];
+          break;
+        }
+      }
+    }
+
+    const result = {
+      month: latestMonth,
+      campuses: {}
+    };
+
+    // 2. 각 캠퍼스 시트 읽기
+    // 컬럼: 년월, 년월, 광진URL, 강동URL, 리체URL, 스카URL
+
+    // 광진
+    if (latestRow[2]) {
+      const gjId = extractSheetId(latestRow[2]);
+      if (gjId) result.campuses.gwangjin = readCampusSheet(gjId, 'gwangjin');
+    }
+
+    // 강동
+    if (gangdongRow[3]) {
+      const gdId = extractSheetId(gangdongRow[3]);
+      if (gdId) {
+        result.campuses.gangdong = readCampusSheet(gdId, 'gangdong');
+        result.campuses.gangdong.month = (gangdongRow[0]||'').trim();
+      }
+    }
+
+    // 리체
+    if (latestRow[4]) {
+      const lcId = extractSheetId(latestRow[4]);
+      if (lcId) result.campuses.riche = readCampusSheet(lcId, 'riche');
+    }
+
+    // 스카
+    if (latestRow[5]) {
+      const skId = extractSheetId(latestRow[5]);
+      if (skId) result.campuses.ska = readCampusSheet(skId, 'ska');
+    }
 
     return ContentService
-      .createTextOutput(JSON.stringify({result: 'success'}))
+      .createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
+
+  } catch(e) {
     return ContentService
-      .createTextOutput(JSON.stringify({result: 'error', message: error.toString()}))
+      .createTextOutput(JSON.stringify({error: e.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-function doGet(e) {
-  return ContentService
-    .createTextOutput('리드체인지 상담예약 API 정상 작동 중')
-    .setMimeType(ContentService.MimeType.TEXT);
+// URL에서 구글시트 ID 추출
+function extractSheetId(url) {
+  if (!url) return null;
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : null;
+}
+
+// 캠퍼스 시트 읽기
+function readCampusSheet(fileId, type) {
+  try {
+    const ss = SpreadsheetApp.openById(fileId);
+    const sheets = ss.getSheets();
+
+    if (type === 'ska') {
+      return readSkaSheet(sheets[0]);
+    }
+
+    // 첫 번째 시트 읽기 (보통 학생 명단)
+    const sheet = sheets[0];
+    const data = sheet.getDataRange().getValues();
+
+    const students = [];
+    const summary = { total: 0, paid: 0, unpaid: 0 };
+
+    // 헤더 행 찾기 (이름이 있는 열 감지)
+    let nameCol = -1, schoolCol = -1, gradeCol = -1, phoneCol = -1, paidCol = -1, amountCol = -1;
+
+    for (let r = 0; r < Math.min(10, data.length); r++) {
+      for (let c = 0; c < data[r].length; c++) {
+        const v = String(data[r][c] || '').trim();
+        if (v === '이름' || v === '학생이름') nameCol = c;
+        if (v === '학교' || v === '고등학교') schoolCol = c;
+        if (v === '학년') gradeCol = c;
+        if (v === '연락처' || v === '학생연락처' || v === '전화번호') phoneCol = c;
+        if (v === '납부' || v === '결제' || v === '완납' || v.includes('납부')) paidCol = c;
+        if (v === '금액' || v === '결제금액' || v === '수납') amountCol = c;
+      }
+      if (nameCol >= 0) break;
+    }
+
+    // 학생 데이터 수집
+    if (nameCol >= 0) {
+      for (let r = 1; r < data.length; r++) {
+        const name = String(data[r][nameCol] || '').trim();
+        if (!name || name === '합계' || name === '소계') continue;
+
+        const student = {
+          name: name,
+          school: schoolCol >= 0 ? String(data[r][schoolCol] || '').trim() : '',
+          grade: gradeCol >= 0 ? String(data[r][gradeCol] || '').trim() : '',
+          phone: phoneCol >= 0 ? String(data[r][phoneCol] || '').trim() : '',
+          paid: paidCol >= 0 ? !!data[r][paidCol] : false,
+          amount: amountCol >= 0 ? Number(data[r][amountCol]) || 0 : 0
+        };
+
+        if (student.name.length > 1 && student.name.length < 10) {
+          students.push(student);
+          summary.total++;
+          if (student.paid) summary.paid++;
+          else summary.unpaid++;
+        }
+      }
+    }
+
+    return { students, summary, sheetName: sheet.getName() };
+
+  } catch(e) {
+    return { error: e.toString(), students: [], summary: { total: 0, paid: 0, unpaid: 0 } };
+  }
+}
+
+// 스카 시트 읽기
+function readSkaSheet(sheet) {
+  try {
+    const data = sheet.getDataRange().getValues();
+    const members = [];
+    let total = 0, richeMembers = 0, generalMembers = 0;
+
+    for (let r = 0; r < data.length; r++) {
+      for (let c = 0; c < data[r].length; c++) {
+        const v = String(data[r][c] || '').trim();
+        if (v.length >= 2 && v.length <= 4 && /^[가-힣]+$/.test(v)) {
+          // 한글 이름 감지
+          members.push({ name: v, row: r, col: c });
+          total++;
+        }
+      }
+    }
+
+    return {
+      members,
+      summary: { total, richeMembers, generalMembers },
+      sheetName: sheet.getName()
+    };
+
+  } catch(e) {
+    return { error: e.toString(), members: [], summary: { total: 0 } };
+  }
 }
 
 // ═══ 방문완료 자동 체크 ═══
-//
-// 리체상담양식(별도 파일)에 상담이 기록되면
-// 뉴상담예약의 M열 체크박스를 체크 + N열에 상담자 이메일 기록
-//
-// [트리거 설정]
-// 1. Apps Script 왼쪽 ⏰ 트리거 클릭
-// 2. + 트리거 추가
-// 3. 함수: checkVisitStatus
-// 4. 이벤트: 시간 기반 트리거 → 분 타이머 → 매 5분
-// 5. 저장
-
 function checkVisitStatus() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const reserveSheet = ss.getSheetByName(RESERVE_SHEET);
+  if (!reserveSheet) { Logger.log('뉴상담예약 시트 없음'); return; }
 
-  if (!reserveSheet) {
-    Logger.log('뉴상담예약 시트를 찾을 수 없습니다');
-    return;
-  }
-
-  // 리체상담양식 (별도 파일에서 열기)
   let consultSheet;
   try {
     const consultSS = SpreadsheetApp.openById(CONSULT_FILE_ID);
-    consultSheet = consultSS.getSheetByName(CONSULT_SHEET);
-    if (!consultSheet) {
-      // 시트 이름이 다를 수 있으니 첫 번째 시트 사용
-      consultSheet = consultSS.getSheets()[0];
-    }
-  } catch (e) {
-    Logger.log('리체상담양식 파일 접근 실패: ' + e.message);
-    return;
-  }
+    consultSheet = consultSS.getSheetByName(CONSULT_SHEET) || consultSS.getSheets()[0];
+  } catch(e) { Logger.log('리체상담양식 접근 실패: ' + e.message); return; }
 
-  // 리체상담양식 데이터 수집
-  // 구조: A:타임스탬프 | B:이메일 | C:학생이름 | D:학교 | E:학년 | F:학생연락처
   const consultData = consultSheet.getDataRange().getValues();
   const consultStudents = [];
-
   for (let i = 1; i < consultData.length; i++) {
-    const row = consultData[i];
-    const name = String(row[2] || '').trim();   // C열: 학생 이름
-    const email = String(row[1] || '').trim();   // B열: 상담자 이메일
-    const school = String(row[3] || '').trim();  // D열: 학교
-    const grade = String(row[4] || '').trim();   // E열: 학년
-    const phone = String(row[5] || '').trim();   // F열: 학생 연락처
-
-    if (name) {
-      consultStudents.push({ name, email, school, grade, phone });
-    }
+    const name = String(consultData[i][2] || '').trim();
+    if (name) consultStudents.push({
+      name, email: String(consultData[i][1]||'').trim(),
+      school: String(consultData[i][3]||'').trim(),
+      grade: String(consultData[i][4]||'').trim(),
+      phone: String(consultData[i][5]||'').trim()
+    });
   }
+  if (!consultStudents.length) { Logger.log('상담 데이터 없음'); return; }
 
-  if (consultStudents.length === 0) {
-    Logger.log('리체상담양식에 데이터 없음');
-    return;
-  }
-
-  // 뉴상담예약 데이터
-  // 구조: B:이름 | C:학교 | D:학년 | F:연락처 | M:체크박스 | N:상담자
   const reserveData = reserveSheet.getDataRange().getValues();
   let updated = 0;
-
   for (let i = 1; i < reserveData.length; i++) {
-    const rName = String(reserveData[i][1] || '').trim();    // B열: 이름
-    const rSchool = String(reserveData[i][2] || '').trim();   // C열: 학교
-    const rGrade = String(reserveData[i][3] || '').trim();    // D열: 학년
-    const rPhone = String(reserveData[i][5] || '').trim();    // F열: 연락처
-    const isChecked = reserveData[i][12];                      // M열: 체크박스
-
-    // 이미 체크된 건 스킵
-    if (isChecked === true) continue;
-
-    // 매칭: 이름이 같고 + (학교 OR 연락처 OR 학년이 같으면) 방문완료
-    for (const student of consultStudents) {
-      const nameMatch = rName === student.name;
-      if (!nameMatch) continue;
-
-      // 전화번호 비교 (하이픈 제거)
-      const cleanPhone = s => s.replace(/[-\s]/g, '');
-      const phoneMatch = rPhone && student.phone && cleanPhone(rPhone) === cleanPhone(student.phone);
-      const schoolMatch = rSchool && student.school && rSchool === student.school;
-      const gradeMatch = rGrade && student.grade && rGrade === student.grade;
-
-      if (phoneMatch || schoolMatch || gradeMatch) {
-        // M열: 체크박스 체크
-        reserveSheet.getRange(i + 1, 13).setValue(true);
-        // L열: 상태 → 상담완료
-        reserveSheet.getRange(i + 1, 12).setValue('상담완료');
-        // N열: 상담자 이메일
-        reserveSheet.getRange(i + 1, 14).setValue(student.email);
-
+    const rName = String(reserveData[i][1]||'').trim();
+    if (!rName || reserveData[i][12] === true) continue;
+    const rSchool = String(reserveData[i][2]||'').trim();
+    const rGrade = String(reserveData[i][3]||'').trim();
+    const rPhone = String(reserveData[i][5]||'').trim();
+    const clean = s => s.replace(/[-\s]/g,'');
+    for (const s of consultStudents) {
+      if (rName !== s.name) continue;
+      if ((rPhone && s.phone && clean(rPhone)===clean(s.phone)) || (rSchool && s.school && rSchool===s.school) || (rGrade && s.grade && rGrade===s.grade)) {
+        reserveSheet.getRange(i+1,13).setValue(true);
+        reserveSheet.getRange(i+1,12).setValue('상담완료');
+        reserveSheet.getRange(i+1,14).setValue(s.email);
         updated++;
-        Logger.log('매칭: ' + rName + ' ← ' + student.email);
         break;
       }
     }
   }
-
-  Logger.log('방문완료 체크 완료: ' + updated + '건 업데이트 (총 ' + consultStudents.length + '명 비교)');
+  Logger.log('방문완료 체크: ' + updated + '건');
 }
