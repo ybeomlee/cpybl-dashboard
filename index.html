@@ -231,6 +231,7 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
   <button class="ni" id="ni-gj" onclick="go(this,'gj','팀무광진','2026-04 현황')"><span class="ni-ic">◈</span>팀무광진<span class="ni-bd">25</span></button>
   <button class="ni" id="ni-gd" onclick="go(this,'gd','팀무강동','2026-03 현황')"><span class="ni-ic">◈</span>팀무강동<span class="ni-bd">144</span></button>
   <button class="ni" id="ni-lc" onclick="go(this,'lc','리드체인지','2026-04 현황')"><span class="ni-ic">◈</span>리드체인지<span class="ni-bd">40</span></button>
+  <button class="ni" id="ni-consult" onclick="go(this,'consult','상담 현황','실시간');loadConsult()"><span class="ni-ic">☎</span>상담 현황<span class="ni-bd" id="consult-badge">-</span></button>
   <div class="sb-sec">결산</div>
   <button class="ni" id="ni-profit" onclick="go(this,'profit','순수익 현황','2024~2026 비교')"><span class="ni-ic">↑</span>순수익 현황</button>
   <button class="ni" id="ni-expense" onclick="go(this,'expense','지출 내역','전월 대비')"><span class="ni-ic">≡</span>지출 내역</button>
@@ -920,6 +921,57 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
   </table>
 </div>
 </div><!-- /loan -->
+
+<!-- ══ 상담현황 ══ -->
+<div class="pg" id="pg-consult">
+<div class="stt">팀무브먼트 상담 현황</div>
+<div class="sts">구글시트 실시간 연동 · 새로고침 시 최신 데이터 반영</div>
+
+<div class="g4 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">전체 상담</div><div class="kv" id="cs-total">-</div><div class="ks">총 신청 건수</div></div>
+  <div class="kc"><div class="kc-top" style="background:#4A00E0"></div><div class="kl">상담 완료</div><div class="kv" id="cs-done" style="color:#4A00E0">-</div><div class="ks" id="cs-done-pct">-</div></div>
+  <div class="kc"><div class="kc-top" style="background:#D63031"></div><div class="kl">미방문</div><div class="kv" id="cs-noshow" style="color:#D63031">-</div><div class="ks" id="cs-noshow-pct">-</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">등록 전환</div><div class="kv" id="cs-convert" style="color:var(--p)">-</div><div class="ks">상담→등록</div></div>
+</div>
+
+<div class="g2 mb16">
+  <div class="card">
+    <div class="ch"><div class="ct">캠퍼스별</div></div>
+    <div class="cb-rows" id="cs-campus-bars"></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">유입 경로별</div></div>
+    <div class="cb-rows" id="cs-source-bars"></div>
+  </div>
+</div>
+
+<div class="g2 mb16">
+  <div class="card">
+    <div class="ch"><div class="ct">문의 유형별</div></div>
+    <div class="cb-rows" id="cs-type-bars"></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">상태별</div></div>
+    <div class="cb-rows" id="cs-status-bars"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><div class="ct">상담 신청 목록</div><div class="csm">최신순 정렬 · 구글시트에서 수정 시 자동 반영</div></div>
+  <div class="ptabs mb12" id="cs-filter-tabs">
+    <button class="ptab on" onclick="filterConsult('all',this)">전체</button>
+    <button class="ptab" onclick="filterConsult('광진',this)">광진</button>
+    <button class="ptab" onclick="filterConsult('강동',this)">강동</button>
+    <button class="ptab" onclick="filterConsult('미방문',this)">미방문만</button>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="tbl" id="cs-table">
+      <thead><tr><th>신청일</th><th>이름</th><th>캠퍼스</th><th>문의유형</th><th>희망날짜</th><th>시간</th><th>유입경로</th><th>상태</th></tr></thead>
+      <tbody id="cs-tbody"><tr><td colspan="8" style="text-align:center;padding:30px;color:var(--mu)">데이터 로딩 중...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+</div><!-- /consult -->
 
 <!-- ══ MARKETING ══ -->
 <div class="pg" id="pg-mkt">
@@ -1738,6 +1790,122 @@ MKD.lc_eng_only={t:"영어만 수강 (1명)",rows:[
   {d:"영어만",title:"안시연 (선화예고 2학년) · 김하류T 영어 · 음대입시"}]};
 MKD.lc_mgmt_only={t:"생활관리만 (1명)",rows:[
   {d:"관리만",title:"민서준 (대원고 3학년) · 체대입시 · 수업 없이 관리만 진행"}]};
+
+// ═══ CONSULTATION LIVE DATA ═══
+const CONSULT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTkhoxBJ9ykp_z2faHs6ezr01w8c7V3SGlJNxgmJShC5W3E0Olld1C7EUej1eFtPBX3bWmPtDw6LvFy/pub?output=csv';
+let consultData = [];
+let consultFilter = 'all';
+
+async function loadConsult() {
+  try {
+    const res = await fetch(CONSULT_CSV);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) return;
+    const header = rows[0];
+    consultData = rows.slice(1).filter(r => r[0] && r[0].trim()).map(r => ({
+      date: r[0]||'', name: r[1]||'', phone: r[2]||'',
+      campus: r[3]||'', type: r[4]||'', wishDate: r[5]||'',
+      time: r[6]||'', source: r[7]||'', status: r[8]||'',
+      visited: (r[9]||'').toUpperCase()==='TRUE', result: r[10]||''
+    }));
+    // 최신순 정렬
+    consultData.sort((a,b) => b.date.localeCompare(a.date));
+    // 배지 업데이트
+    document.getElementById('consult-badge').textContent = consultData.length;
+    renderConsult();
+    console.log('✅ 상담현황 로드 (' + consultData.length + '건)');
+  } catch(e) {
+    console.warn('상담현황 로드 실패:', e);
+    document.getElementById('cs-tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:#D63031">데이터 로드 실패 — 시트 공유 설정을 확인하세요</td></tr>';
+  }
+}
+
+function renderConsult() {
+  const data = consultFilter === 'all' ? consultData :
+    consultFilter === '미방문' ? consultData.filter(d => d.status.includes('미방문') || !d.visited) :
+    consultData.filter(d => d.campus === consultFilter);
+
+  // KPI
+  const total = consultData.length;
+  const done = consultData.filter(d => d.status.includes('완료')).length;
+  const noshow = consultData.filter(d => d.status.includes('미방문') || (!d.visited && !d.status.includes('완료'))).length;
+  document.getElementById('cs-total').textContent = total + '건';
+  document.getElementById('cs-done').textContent = done + '건';
+  document.getElementById('cs-done-pct').textContent = total ? Math.round(done/total*100)+'% 전환' : '-';
+  document.getElementById('cs-noshow').textContent = noshow + '건';
+  document.getElementById('cs-noshow-pct').textContent = total ? Math.round(noshow/total*100)+'% 비율' : '-';
+  document.getElementById('cs-convert').textContent = done + '건';
+
+  // 캠퍼스별 바
+  const campusCount = {};
+  consultData.forEach(d => { campusCount[d.campus] = (campusCount[d.campus]||0)+1; });
+  const maxC = Math.max(...Object.values(campusCount),1);
+  document.getElementById('cs-campus-bars').innerHTML = Object.entries(campusCount)
+    .sort((a,b) => b[1]-a[1])
+    .map(([k,v]) => `<div class="cr"><span class="cr-l">${k}</span><div class="cr-bw"><div class="cr-b" style="width:${v/maxC*100}%"></div></div><span class="cr-n">${v}</span></div>`).join('');
+
+  // 유입경로별 바
+  const srcCount = {};
+  consultData.forEach(d => { if(d.source) srcCount[d.source] = (srcCount[d.source]||0)+1; });
+  const maxS = Math.max(...Object.values(srcCount),1);
+  document.getElementById('cs-source-bars').innerHTML = Object.entries(srcCount)
+    .sort((a,b) => b[1]-a[1])
+    .map(([k,v]) => `<div class="cr"><span class="cr-l">${k}</span><div class="cr-bw"><div class="cr-b" style="width:${v/maxS*100}%"></div></div><span class="cr-n">${v}</span></div>`).join('');
+
+  // 문의유형별 바
+  const typeCount = {};
+  consultData.forEach(d => { if(d.type) typeCount[d.type] = (typeCount[d.type]||0)+1; });
+  const maxT = Math.max(...Object.values(typeCount),1);
+  document.getElementById('cs-type-bars').innerHTML = Object.entries(typeCount)
+    .sort((a,b) => b[1]-a[1])
+    .map(([k,v]) => `<div class="cr"><span class="cr-l">${k}</span><div class="cr-bw"><div class="cr-b" style="width:${v/maxT*100}%"></div></div><span class="cr-n">${v}</span></div>`).join('');
+
+  // 상태별 바
+  const statCount = {};
+  consultData.forEach(d => { const s = d.status||'미확인'; statCount[s] = (statCount[s]||0)+1; });
+  const maxSt = Math.max(...Object.values(statCount),1);
+  document.getElementById('cs-status-bars').innerHTML = Object.entries(statCount)
+    .sort((a,b) => b[1]-a[1])
+    .map(([k,v]) => {
+      const color = k.includes('완료') ? 'var(--p)' : k.includes('미방문') ? '#D63031' : 'var(--mu)';
+      return `<div class="cr"><span class="cr-l" style="color:${color};font-weight:700">${k}</span><div class="cr-bw"><div class="cr-b" style="width:${v/maxSt*100}%;background:${color}"></div></div><span class="cr-n" style="color:${color}">${v}</span></div>`;
+    }).join('');
+
+  // 테이블
+  if (data.length === 0) {
+    document.getElementById('cs-tbody').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mu)">해당 조건의 상담이 없습니다</td></tr>';
+    return;
+  }
+  document.getElementById('cs-tbody').innerHTML = data.map(d => {
+    const statusBadge = d.status.includes('완료')
+      ? `<span class="badge b-paid">${d.status}</span>`
+      : d.status.includes('미방문')
+      ? `<span class="badge b-red">${d.status}</span>`
+      : `<span class="badge b-unpaid">${d.status||'대기'}</span>`;
+    const campusBadge = d.campus === '광진'
+      ? `<span class="badge b-blue">${d.campus}</span>`
+      : `<span class="badge" style="background:#E8F5E9;color:#2E7D32">${d.campus}</span>`;
+    const datePart = d.date.split(' ')[0] || d.date;
+    return `<tr>
+      <td style="font-size:11px;color:var(--mu)">${datePart}</td>
+      <td style="font-weight:700">${d.name}</td>
+      <td>${campusBadge}</td>
+      <td>${d.type}</td>
+      <td style="font-size:11px">${d.wishDate}</td>
+      <td style="font-size:11px">${d.time}</td>
+      <td><span class="badge" style="background:var(--plb);color:var(--p)">${d.source}</span></td>
+      <td>${statusBadge}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterConsult(f, btn) {
+  consultFilter = f;
+  document.querySelectorAll('#cs-filter-tabs .ptab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderConsult();
+}
 
 // PANEL TOGGLE (mobile)
 function togglePanel(){
