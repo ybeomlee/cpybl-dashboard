@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CPYBL 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --p:#6C5CE7;--p2:#A29BFE;--pl:#EDE9FE;--plb:#F5F3FF;
+  --bk:#2D3436;--w:#FFFFFF;--bg:#F9FAFB;--tx:#1A1A2E;
+  --mu:#9CA3AF;--bd:#E5E7EB;--sb-bg:#2D3436;
+  --pos:#00B894;--neg:#D63031;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:"Noto Sans KR",sans-serif;font-size:13px;color:var(--tx);background:var(--bg);overflow:hidden}
+body{display:flex}
+
+/* SIDEBAR */
+aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.logo{padding:22px 20px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.logo-inner{display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;background:var(--p);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-mark span{font-size:9px;font-weight:900;color:#fff;letter-spacing:-.5px}
+.logo-txt{font-size:15px;font-weight:900;color:#fff;letter-spacing:1px}
+.logo-sub{font-size:9.5px;color:rgba(255,255,255,.35);margin-top:1px;letter-spacing:.5px}
+.sb-sec{padding:16px 20px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3)}
+.ni{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:9px;padding:9px 12px;margin:1px 10px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:500;color:rgba(255,255,255,.5);font-family:"Noto Sans KR",sans-serif;width:calc(100% - 20px);transition:all .14s}
+.ni:hover{background:rgba(255,255,255,.07);color:#fff}
+.ni.on{background:var(--p);color:#fff;font-weight:700}
+.ni-ic{width:16px;text-align:center;font-size:12px;flex-shrink:0}
+.ni-bd{margin-left:auto;background:rgba(255,255,255,.15);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px}
+.ni.on .ni-bd{background:rgba(255,255,255,.25)}
+.sb-bottom{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-info{font-size:9.5px;color:rgba(255,255,255,.25);line-height:1.6}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:54px;background:var(--w);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 22px;flex-shrink:0}
+.tb-greet{flex:1}
+.tb-hi{font-size:10.5px;color:var(--mu)}
+.tb-title{font-size:15px;font-weight:800;color:var(--bk)}
+.tb-badge{background:var(--pl);color:var(--p2);font-size:10px;font-weight:700;padding:3px 10px;border-radius:6px}
+.tb-profile{display:flex;align-items:center;gap:8px;margin-left:12px;cursor:pointer}
+.tb-av{width:30px;height:30px;background:var(--bk);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--p)}
+.tb-nm{font-size:12px;font-weight:700}
+
+/* CONTENT + PANEL */
+.content-wrap{flex:1;display:flex;overflow:hidden}
+.content{flex:1;overflow-y:auto;padding:20px 22px}
+.pg{display:none}.pg.on{display:block}
+
+/* CARDS */
+.card{background:var(--w);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ct{font-size:12.5px;font-weight:700;color:var(--bk)}
+.csm{font-size:10.5px;color:var(--mu)}
+.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* KPI CARDS */
+.kc{background:var(--w);border:1px solid var(--bd);border-radius:12px;padding:15px 16px;cursor:pointer;transition:all .14s;position:relative;overflow:hidden}
+.kc:hover{box-shadow:0 4px 16px rgba(38,125,255,.12);transform:translateY(-2px)}
+.kc.dark{background:var(--bk)}
+.kl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin-bottom:6px}
+.kc.dark .kl{color:rgba(255,255,255,.4)}
+.kv{font-size:21px;font-weight:900;letter-spacing:-.5px;line-height:1.15;color:var(--bk)}
+.kc.dark .kv{color:var(--p)}
+.ks{font-size:10.5px;color:var(--mu);margin-top:3px}
+.kc.dark .ks{color:rgba(255,255,255,.3)}
+.kc-top{position:absolute;top:0;left:0;right:0;height:3px;background:var(--p)}
+.kc.dark .kc-top{background:var(--p2)}
+
+/* COUNT BLOCKS */
+.cb{background:var(--w);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+.cb-hd{padding:11px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);background:#F9FAFB}
+.cb-lbl{font-size:12.5px;font-weight:700;color:var(--bk)}
+.cb-tot{font-size:20px;font-weight:900;color:var(--p)}
+.cb-rows{padding:6px 4px}
+.cr{display:flex;align-items:center;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background .1s;gap:10px}
+.cr:hover{background:var(--plb)}
+.cr-l{font-size:12.5px;flex:1;color:var(--tx)}
+.cr-r{font-size:10.5px;color:var(--mu);margin-right:4px}
+.cr-bw{flex:1.5;height:4px;background:#F5F3FF;border-radius:2px;overflow:hidden}
+.cr-b{height:100%;border-radius:2px;background:var(--p)}
+.cr-n{font-size:14px;font-weight:900;width:24px;text-align:right;color:var(--p)}
+.cr-zero .cr-l,.cr-zero .cr-n{opacity:.25}
+
+/* TABLES */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:#F9FAFB;color:var(--mu);padding:8px 11px;text-align:left;font-weight:700;border-bottom:1.5px solid var(--bd);font-size:10px;text-transform:uppercase;white-space:nowrap}
+.tbl th.r,.tbl td.r{text-align:right}
+.tbl td{padding:9px 11px;border-bottom:1px solid #F9FAFB;white-space:nowrap}
+.tbl tr:hover td{background:#F9FAFB}
+.tbl .tf td{font-weight:800;background:#F9FAFB;border-top:2px solid var(--bd)}
+.txt-p{color:var(--p);font-weight:700}.txt-p2{color:var(--p2);font-weight:700}
+.txt-profit{color:#4A00E0;font-weight:900}.txt-loss{color:#D63031;font-weight:900}
+
+/* TEACHER LIST */
+.tl{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #F9FAFB;gap:10px}
+.tl:last-child{border-bottom:none}
+.av{width:28px;height:28px;border-radius:50%;background:var(--bk);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;color:var(--p);flex-shrink:0}
+.tl-info{flex:1}.tl-nm{font-size:12.5px;font-weight:700}.tl-sub{font-size:10px;color:var(--mu)}
+.tl-amt{font-size:12px;font-weight:700;text-align:right}
+
+/* CHARTS */
+.cw{position:relative;height:190px}.cwsm{position:relative;height:130px}
+
+/* TABS */
+.ptabs{display:flex;gap:4px;background:#F5F3FF;border-radius:8px;padding:3px;width:fit-content;margin-bottom:13px}
+.ptab{padding:5px 13px;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;border:none;background:transparent;font-family:"Noto Sans KR",sans-serif;color:var(--mu);transition:all .13s}
+.ptab.on{background:#6C5CE7;color:#fff;box-shadow:0 1px 4px rgba(108,92,231,.25);font-weight:700}
+
+/* TOGGLES */
+.togs{display:flex;gap:4px;flex-wrap:wrap}
+.tog{padding:3px 9px;border-radius:6px;border:1.5px solid var(--bd);background:var(--w);cursor:pointer;font-size:10.5px;font-weight:600;font-family:"Noto Sans KR",sans-serif;color:var(--mu);transition:all .12s}
+.tog.on{background:var(--p);border-color:var(--p);color:#fff}
+
+/* BADGES */
+.badge{padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;display:inline-block;white-space:nowrap}
+.b-blue{background:var(--pl);color:var(--p2)}
+.b-bk{background:var(--bk);color:var(--w)}
+.b-paid{background:var(--p);color:#fff}
+.b-unpaid{background:#F5F3FF;color:var(--mu)}
+.b-lc{background:var(--pl);color:var(--p2)}
+.b-nolc{background:#F5F5F5;color:#B0B5C0}
+.b-red{background:#FDECEA;color:#C0392B}
+
+/* SECTION HEADER */
+.stt{font-size:16px;font-weight:900;margin-bottom:2px;color:var(--bk)}
+.sts{font-size:11.5px;color:var(--mu);margin-bottom:16px}
+
+/* EXPENSE */
+.exp-row{display:flex;align-items:center;padding:6.5px 0;border-bottom:1px solid #F9FAFB;font-size:12px;gap:4px}
+.exp-row:last-child{border-bottom:none}
+.exp-name{flex:3;color:var(--tx)}
+.exp-prev{flex:2.5;text-align:right;color:var(--mu);font-size:11.5px}
+.exp-curr{flex:2.5;text-align:right;font-weight:700;font-size:11.5px}
+.exp-diff{flex:2;text-align:right;font-size:10.5px;font-weight:700}
+.d-up{color:#6C5CE7}.d-dn{color:#D63031}.d-na{color:var(--mu)}
+.exp-sec{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);padding:8px 0 4px;border-bottom:1px solid var(--bd);margin-top:2px;margin-bottom:2px}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center;padding:20px}
+.ov.on{display:flex}
+.mo{background:var(--w);border-radius:16px;width:100%;max-width:860px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(38,125,255,.15)}
+.mo-head{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.mo-title{font-size:14px;font-weight:800;color:var(--bk)}
+.mo-close{width:28px;height:28px;border-radius:7px;background:#F9FAFB;border:none;cursor:pointer;font-size:14px;color:var(--mu);display:flex;align-items:center;justify-content:center}
+.mo-close:hover{background:var(--bk);color:var(--p)}
+.mo-body{padding:18px 20px;overflow-y:auto;flex:1}
+
+/* ACTIVITY PANEL */
+.act-panel{width:240px;background:var(--w);border-left:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.act-head{padding:14px 16px 10px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.act-title{font-size:13px;font-weight:800;color:var(--bk)}
+.act-item{padding:12px 14px;border-bottom:1px solid var(--bd)}
+.act-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:3px}
+.act-num{font-size:20px;font-weight:900;color:var(--bk);margin-bottom:2px}
+.act-sub{font-size:10px;color:var(--mu);margin-bottom:7px}
+.act-bar{height:4px;background:#F5F3FF;border-radius:2px;overflow:hidden;margin-bottom:5px}
+.act-fill{height:100%;border-radius:2px;background:var(--p)}
+.act-foot{display:flex;justify-content:space-between;font-size:10.5px}
+
+/* D-MONTH */
+.dm-now{background:#6C5CE7;color:#fff;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700}
+.dm-soon{background:var(--pl);color:var(--p2);padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700}
+.dm-ok{background:#F9FAFB;color:var(--mu);padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#D0D8F0;border-radius:2px}
+
+/* MOBILE */
+@media(max-width:900px){
+  body{flex-direction:column}
+  aside{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;overflow-x:auto}
+  .logo{padding:12px 16px;border-bottom:none}
+  .sb-sec{display:none}
+  .ni{margin:2px;padding:7px 10px;font-size:11px;width:auto}
+  .ni-bd{font-size:8px;padding:1px 5px}
+  .sb-bottom{display:none}
+  .main{margin-left:0}
+  .topbar{padding:0 14px;height:44px}
+  .content{padding:12px 14px}
+  .content-wrap{flex-direction:column}
+  .act-panel{width:100%;border-left:none;border-top:1px solid var(--bd);flex-direction:row;flex-wrap:wrap;overflow-x:auto}
+  .act-item{min-width:160px;flex:1}
+  .g2,.g3,.g4{grid-template-columns:1fr!important}
+  .kc{padding:12px}
+  .kv{font-size:18px}
+  .mo{max-width:95vw;max-height:80vh}
+}
+@media(max-width:500px){
+  aside{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap}
+  .ni{white-space:nowrap;flex-shrink:0}
+  .topbar{height:40px}
+  .tb-hi{display:none}
+  .tb-profile{display:none}
+  .stt{font-size:14px}
+  .kv{font-size:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside>
+  <div class="logo">
+    <div class="logo-inner">
+      <div class="logo-mark"><span>CP</span></div>
+      <div>
+        <div class="logo-txt">CPYBL</div>
+        <div class="logo-sub">그룹 운영 대시보드</div>
+      </div>
+    </div>
+  </div>
+  <div class="sb-sec">메인</div>
+  <button class="ni on" id="ni-home" onclick="go(this,'home','대시보드 홈','그룹 전체 현황')"><span class="ni-ic">⊞</span>대시보드 홈</button>
+  <div class="sb-sec">캠퍼스</div>
+  <button class="ni" id="ni-gj" onclick="go(this,'gj','팀무광진','2026-04 현황')"><span class="ni-ic">◈</span>팀무광진<span class="ni-bd">25</span></button>
+  <button class="ni" id="ni-gd" onclick="go(this,'gd','팀무강동','2026-03 현황')"><span class="ni-ic">◈</span>팀무강동<span class="ni-bd">144</span></button>
+  <button class="ni" id="ni-lc" onclick="go(this,'lc','리드체인지','2026-04 현황')"><span class="ni-ic">◈</span>리드체인지<span class="ni-bd">40</span></button>
+  <div class="sb-sec">결산</div>
+  <button class="ni" id="ni-profit" onclick="go(this,'profit','순수익 현황','2024~2026 비교')"><span class="ni-ic">↑</span>순수익 현황</button>
+  <button class="ni" id="ni-expense" onclick="go(this,'expense','지출 내역','전월 대비')"><span class="ni-ic">≡</span>지출 내역</button>
+  <button class="ni" id="ni-personal" onclick="go(this,'personal','개인 지출','이윤범 · 김아란')"><span class="ni-ic">◯</span>개인 지출</button>
+  <button class="ni" id="ni-install" onclick="go(this,'install','카드 할부','만기 기준')"><span class="ni-ic">▣</span>카드 할부</button>
+  <button class="ni" id="ni-loan" onclick="go(this,'loan','대출 현황','월 상환')"><span class="ni-ic">◫</span>대출 현황</button>
+  <div class="sb-sec">마케팅</div>
+  <button class="ni" id="ni-mkt" onclick="go(this,'mkt','마케팅','블로그·전단지·유입')"><span class="ni-ic">◉</span>마케팅</button>
+  <button class="ni" id="ni-ai" onclick="go(this,'ai','AI 추천','데이터 기반 전략')"><span class="ni-ic">◆</span>AI 추천</button>
+  <div class="sb-bottom">
+    <div class="sb-info">CPYBL Group<br>2026년 4월 기준 데이터</div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-greet">
+      <div class="tb-hi">안녕하세요, 이윤범 대표님</div>
+      <div class="tb-title" id="tb-title">대시보드 홈</div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="tb-badge">2026년 4월 기준</div>
+    <div id="live-status" style="font-size:9px;color:var(--mu);margin-left:8px">⚪ 오프라인 모드</div>
+    <div class="tb-profile">
+      <div class="tb-av">이</div>
+      <div>
+        <div class="tb-nm">이윤범</div>
+        <div style="font-size:10px;color:var(--mu)">CPYBL</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrap">
+    <div class="content">
+
+<!-- ══ HOME ══ -->
+<div class="pg on" id="pg-home">
+<div class="stt">그룹 현황 개요</div>
+<div class="sts">캠퍼스 카드 클릭 → 상세 · 수업 행 클릭 → 학생 명단</div>
+<div class="g4 mb16">
+  <div class="kc" onclick="go(document.getElementById('ni-gj'),'gj','팀무광진','2026-04 현황')">
+    <div class="kc-top"></div>
+    <div class="kl">팀무광진</div>
+    <div class="kv">565만원</div>
+    <div class="ks">4월 현재 매출 · 예상 76%</div>
+  </div>
+  <div class="kc" onclick="go(document.getElementById('ni-gd'),'gd','팀무강동','2026-03 현황')">
+    <div class="kc-top"></div>
+    <div class="kl">팀무강동</div>
+    <div class="kv">3,933만원</div>
+    <div class="ks">3월 매출 · 시즌 완료</div>
+  </div>
+  <div class="kc" onclick="go(document.getElementById('ni-lc'),'lc','리드체인지','2026-04 현황')">
+    <div class="kc-top"></div>
+    <div class="kl">리드체인지</div>
+    <div class="kv">2,451만원</div>
+    <div class="ks">3월 매출 (학원+스카)</div>
+  </div>
+  <div class="kc" onclick="go(document.getElementById('ni-profit'),'profit','순수익 현황','2024~2026 비교')">
+    <div class="kc-top" style="background:#4A00E0"></div>
+    <div class="kl">1~3월 합산 순수익</div>
+    <div class="kv txt-profit">+2,929만원</div>
+    <div class="ks">3개 캠퍼스 합산</div>
+  </div>
+</div>
+
+<!-- 순수익 추이 - SIMPLIFIED bar chart -->
+<div class="card mb16">
+  <div class="ch">
+    <div>
+      <div class="ct">순수익 추이</div>
+      <div style="font-size:10.5px;color:var(--mu);margin-top:2px">연도 선택 후 캠퍼스별 월별 순수익 (단위: 만원)</div>
+    </div>
+    <div class="ptabs" style="margin-bottom:0">
+      <button class="ptab on" onclick="setHomeYr(2026,this)">2026</button>
+      <button class="ptab" onclick="setHomeYr(2025,this)">2025</button>
+      <button class="ptab" onclick="setHomeYr(2024,this)">2024</button>
+    </div>
+  </div>
+  <div class="cw"><canvas id="home-bar"></canvas></div>
+</div>
+
+<!-- 수업별 인원 -->
+<div style="font-size:12.5px;font-weight:700;margin-bottom:10px;color:var(--bk)">수업별 학생 인원 <span style="font-weight:400;color:var(--mu);font-size:11px">— 행 클릭 시 명단 (납부 / 리체연계 색상 표시)</span></div>
+<div class="g3">
+  <div class="cb">
+    <div class="cb-hd"><div><div class="cb-lbl">팀무광진 체대입시</div><div style="font-size:9.5px;color:var(--mu)">2026-04</div></div><div class="cb-tot">25</div></div>
+    <div class="cb-rows">
+      <div class="cr" onclick="showModal('gj3')"><span class="cr-l">3학년</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">15</span></div>
+      <div class="cr" onclick="showModal('gj2')"><span class="cr-l">2학년</span><div class="cr-bw"><div class="cr-b" style="width:40%"></div></div><span class="cr-n">6</span></div>
+      <div class="cr" onclick="showModal('gjNB')"><span class="cr-l">N수생(본원)</span><div class="cr-bw"><div class="cr-b" style="width:20%"></div></div><span class="cr-n">3</span></div>
+      <div class="cr" onclick="showModal('gjN')"><span class="cr-l">N수생</span><div class="cr-bw"><div class="cr-b" style="width:7%"></div></div><span class="cr-n">1</span></div>
+      <div class="cr cr-zero"><span class="cr-l">1학년</span><div class="cr-bw"></div><span class="cr-n">0</span></div>
+      <div style="margin:5px 6px 2px;padding-top:5px;border-top:1px solid var(--bd)">
+        <div style="padding:3px 10px;font-size:9.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px">공무원 체력</div>
+        <div class="cr" onclick="showModal('gjGov')" style="background:#F5F3FF;border-radius:7px"><span class="cr-l" style="color:#6C5CE7">소방</span><div class="cr-bw"><div class="cr-b" style="width:75%;background:#A29BFE"></div></div><span class="cr-n" style="color:#6C5CE7">3</span></div>
+        <div class="cr" onclick="showModal('gjGov')" style="background:#F5F3FF;border-radius:7px;margin-top:2px"><span class="cr-l" style="color:#6C5CE7">경찰</span><div class="cr-bw"><div class="cr-b" style="width:25%;background:#A29BFE"></div></div><span class="cr-n" style="color:#6C5CE7">1</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="cb">
+    <div class="cb-hd"><div><div class="cb-lbl">팀무강동 체대입시</div><div style="font-size:9.5px;color:var(--mu)">2026-03</div></div><div class="cb-tot">151</div></div>
+    <div class="cb-rows">
+      <div class="cr" onclick="showModal('gd3')"><span class="cr-l">3학년</span><div class="cr-bw"><div class="cr-b" style="width:86%"></div></div><span class="cr-n">6</span></div>
+      <div class="cr cr-zero"><span class="cr-l">2학년</span><div class="cr-bw"></div><span class="cr-n">0</span></div>
+      <div class="cr" onclick="showModal('gd1')"><span class="cr-l">1학년</span><div class="cr-bw"><div class="cr-b" style="width:14%"></div></div><span class="cr-n">1</span></div>
+      <div class="cr" onclick="showModal('gdEd')"><span class="cr-l">편입</span><div class="cr-bw"><div class="cr-b" style="width:14%"></div></div><span class="cr-n">1</span></div>
+      <div style="margin:5px 6px 2px;padding-top:5px;border-top:1px solid var(--bd)">
+        <div style="padding:3px 10px;font-size:9.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px">공무원 체력 🔥 시즌</div>
+        <div class="cr" onclick="showModal('gdGov')" style="background:#F5F3FF;border-radius:7px"><span class="cr-l" style="color:#6C5CE7">소방</span><div class="cr-bw"><div class="cr-b" style="width:100%;background:#A29BFE"></div></div><span class="cr-n" style="color:#6C5CE7">71</span></div>
+        <div class="cr" onclick="showModal('gdGov')" style="background:#F5F3FF;border-radius:7px;margin-top:2px"><span class="cr-l" style="color:#6C5CE7">경찰</span><div class="cr-bw"><div class="cr-b" style="width:100%;background:#A29BFE"></div></div><span class="cr-n" style="color:#6C5CE7">73</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="cb">
+    <div class="cb-hd"><div><div class="cb-lbl">리드체인지 수강생</div><div style="font-size:9.5px;color:var(--mu)">2026-04</div></div><div class="cb-tot">40</div></div>
+    <div class="cb-rows">
+      <div style="padding:3px 10px;font-size:9.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px">학년별</div>
+      <div class="cr" onclick="showModal('lcN')"><span class="cr-l">N수생</span><div class="cr-bw"><div class="cr-b" style="width:53%"></div></div><span class="cr-n">8</span></div>
+      <div class="cr" onclick="showModal('lc3')"><span class="cr-l">3학년</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">15</span></div>
+      <div class="cr" onclick="showModal('lc2')"><span class="cr-l">2학년</span><div class="cr-bw"><div class="cr-b" style="width:87%"></div></div><span class="cr-n">13</span></div>
+      <div class="cr" onclick="showModal('lc1')"><span class="cr-l">1학년</span><div class="cr-bw"><div class="cr-b" style="width:27%"></div></div><span class="cr-n">4</span></div>
+      <div style="margin:5px 6px 2px;padding-top:5px;border-top:1px solid var(--bd)">
+        <div style="padding:3px 10px;font-size:9.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px">입시유형</div>
+        <div class="cr" onclick="showModal('lcType')"><span class="cr-l">음대입시</span><div class="cr-bw"><div class="cr-b" style="width:53%"></div></div><span class="cr-n">8</span></div>
+        <div class="cr" onclick="showModal('lcType')"><span class="cr-l">미대/예체</span><div class="cr-bw"><div class="cr-b" style="width:40%"></div></div><span class="cr-n">6</span></div>
+        <div class="cr" onclick="showModal('lcType')"><span class="cr-l">체대입시</span><div class="cr-bw"><div class="cr-b" style="width:53%"></div></div><span class="cr-n">8</span></div>
+        <div class="cr" onclick="showModal('lcType')"><span class="cr-l">일반수능</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">18</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /home -->
+
+<!-- ══ GWANGJIN ══ -->
+<div class="pg" id="pg-gj">
+<div class="stt">팀무광진</div>
+<div class="sts">2026년 4월 기준 · 원장 남태현 · 강사 9명</div>
+<div class="g4 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">현재 매출</div><div class="kv">565만원</div><div class="ks">예상 747만 · 76%</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">체대입시</div><div class="kv">533만원</div><div class="ks">25명</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">공무원체력</div><div class="kv">32만원</div><div class="ks">4명</div></div>
+  <div class="kc"><div class="kc-top" style="background:#4A00E0"></div><div class="kl">순수익 1~3월</div><div class="kv txt-loss">-924만원</div><div class="ks">3월 +721,031원</div></div>
+</div>
+<div class="g2 mb16">
+  <div class="cb">
+    <div class="cb-hd"><div><div class="cb-lbl">체대입시 회원</div><div style="font-size:9.5px;color:var(--mu)">클릭 → 납부 <span style="background:var(--p);color:#fff;padding:1px 5px;border-radius:3px;font-size:9px">파랑</span> / 미납 <span style="background:#F5F3FF;color:var(--mu);padding:1px 5px;border-radius:3px;font-size:9px">회색</span> / 리체 <span style="background:var(--pl);color:var(--p2);padding:1px 5px;border-radius:3px;font-size:9px">연파랑</span></div></div><div class="cb-tot">25</div></div>
+    <div class="cb-rows">
+      <div class="cr" onclick="showModal('gjNB')"><span class="cr-l">N수생(본원)</span><div class="cr-bw"><div class="cr-b" style="width:20%"></div></div><span class="cr-n">3</span></div>
+      <div class="cr" onclick="showModal('gjN')"><span class="cr-l">N수생</span><div class="cr-bw"><div class="cr-b" style="width:7%"></div></div><span class="cr-n">1</span></div>
+      <div class="cr" onclick="showModal('gj3')"><span class="cr-l">3학년</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">15</span></div>
+      <div class="cr" onclick="showModal('gj2')"><span class="cr-l">2학년</span><div class="cr-bw"><div class="cr-b" style="width:40%"></div></div><span class="cr-n">6</span></div>
+      <div class="cr cr-zero"><span class="cr-l">1학년</span><div class="cr-bw"></div><span class="cr-n">0</span></div>
+    </div>
+    <div style="padding:8px 12px;background:#F9FAFB;border-top:1px solid var(--bd);font-size:11px;color:var(--mu)">
+      리체학원 동시수강 → 명단에서 <span style="background:var(--pl);color:var(--p2);padding:1px 6px;border-radius:3px;font-size:9.5px;font-weight:700">리체</span> 색상 표시
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div class="cb">
+      <div class="cb-hd" style="background:#F5F3FF"><div class="cb-lbl" style="color:#6C5CE7">공무원 체력</div><div class="cb-tot" style="color:#6C5CE7">4</div></div>
+      <div class="cb-rows">
+        <div class="cr" onclick="showModal('gjGov')"><span class="cr-l">소방 (완납 2명)</span><div class="cr-bw"><div class="cr-b" style="width:75%;background:#A29BFE"></div></div><span class="cr-n" style="color:#6C5CE7">3</span></div>
+        <div class="cr" onclick="showModal('gjGov')"><span class="cr-l">경찰</span><div class="cr-bw"><div class="cr-b" style="width:25%;background:#D0D8F0"></div></div><span class="cr-n" style="color:var(--mu)">1</span></div>
+      </div>
+    </div>
+    <div class="cb">
+      <div class="cb-hd"><div class="cb-lbl">PT</div><div class="cb-tot" style="color:var(--mu)">0</div></div>
+      <div style="padding:10px 14px;font-size:11px;color:var(--mu)">현재 진행 없음</div>
+    </div>
+  </div>
+</div>
+<div class="g2">
+  <div class="card">
+    <div class="ch"><div class="ct">강사 급여 (월별)</div><div class="csm">클릭하여 상세 보기</div></div>
+    <div class="cb">
+      <div class="cb-hd" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="cb-lbl">2026-04 (진행중)</div><div class="cb-tot" style="font-size:14px">~2,689,504원</div></div>
+      <div style="display:none;padding:6px 10px">
+        <div class="tl"><div class="av">남</div><div class="tl-info"><div class="tl-nm">남태현</div><div class="tl-sub">원장 · 정직원</div></div><div class="tl-amt">1,389,385원</div></div>
+        <div class="tl"><div class="av">최</div><div class="tl-info"><div class="tl-nm">최우진</div><div class="tl-sub">편입담당 · 33h</div></div><div class="tl-amt">421,225원</div></div>
+        <div class="tl"><div class="av">천</div><div class="tl-info"><div class="tl-nm">천성준</div><div class="tl-sub">공무원담당 · 29h</div></div><div class="tl-amt">348,894원</div></div>
+        <div class="tl"><div class="av">조</div><div class="tl-info"><div class="tl-nm">조은별 · 김정원</div><div class="tl-sub">강사 시급제</div></div><div class="tl-amt">270,000원</div></div>
+        <div class="tl"><div class="av">외</div><div class="tl-info"><div class="tl-nm">최원준 외 3명</div><div class="tl-sub">시급제</div></div><div class="tl-amt">~260,000원</div></div>
+      </div>
+    </div>
+    <div class="cb" style="margin-top:6px">
+      <div class="cb-hd" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="cb-lbl">2026-03</div><div class="cb-tot" style="font-size:14px">6,424,752원</div></div>
+      <div style="display:none;padding:8px 14px;font-size:12px;color:var(--mu)">강사 9명 합산 · 월 정산 완료</div>
+    </div>
+    <div class="cb" style="margin-top:6px">
+      <div class="cb-hd" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="cb-lbl">2026-02</div><div class="cb-tot" style="font-size:14px">6,479,929원</div></div>
+      <div style="display:none;padding:8px 14px;font-size:12px;color:var(--mu)">강사 9명 합산 · 월 정산 완료</div>
+    </div>
+    <div class="cb" style="margin-top:6px">
+      <div class="cb-hd" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="cb-lbl">2026-01</div><div class="cb-tot" style="font-size:14px">8,959,312원</div></div>
+      <div style="display:none;padding:8px 14px;font-size:12px;color:var(--mu)">강사 9명 합산 · 월 정산 완료</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch">
+      <div class="ct">팀무광진 순수익</div>
+      <div class="togs" id="gj-yr-tog">
+        <button class="tog on" onclick="gjTogYr(2024,this)" style="font-size:10px;padding:3px 8px">2024</button>
+        <button class="tog on" onclick="gjTogYr(2025,this)" style="font-size:10px;padding:3px 8px">2025</button>
+        <button class="tog on" onclick="gjTogYr(2026,this)" style="font-size:10px;padding:3px 8px">2026</button>
+      </div>
+    </div>
+    <div class="cw"><canvas id="gj-ch"></canvas></div>
+  </div>
+</div>
+</div><!-- /gj -->
+
+<!-- ══ GANGDONG ══ -->
+<div class="pg" id="pg-gd">
+<div class="stt">팀무강동</div>
+<div class="sts">2026년 3월 기준 · 원장 이성호 · 강사 8명</div>
+<div class="g4 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">3월 매출</div><div class="kv">3,933만원</div><div class="ks">100% 달성</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">공무원체력</div><div class="kv">3,588만원</div><div class="ks">144명</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">체대입시</div><div class="kv">257만원</div><div class="ks">7명</div></div>
+  <div class="kc"><div class="kc-top" style="background:#4A00E0"></div><div class="kl">순수익 1~3월</div><div class="kv txt-profit">+1,695만원</div><div class="ks">3월 +1,791만</div></div>
+</div>
+<div class="g2 mb16">
+  <div class="cb">
+    <div class="cb-hd"><div><div class="cb-lbl">체대입시 회원</div><div style="font-size:9.5px;color:var(--mu)">클릭 → 납부 <span style="background:var(--p);color:#fff;padding:1px 5px;border-radius:3px;font-size:9px">파랑</span> / 미납 <span style="background:#F5F3FF;color:var(--mu);padding:1px 5px;border-radius:3px;font-size:9px">회색</span> / 리체 <span style="background:var(--pl);color:var(--p2);padding:1px 5px;border-radius:3px;font-size:9px">연파랑</span></div></div><div class="cb-tot">7</div></div>
+    <div class="cb-rows">
+      <div class="cr" onclick="showModal('gd3')"><span class="cr-l">3학년</span><div class="cr-bw"><div class="cr-b" style="width:86%"></div></div><span class="cr-n">6</span></div>
+      <div class="cr cr-zero"><span class="cr-l">2학년</span><div class="cr-bw"></div><span class="cr-n">0</span></div>
+      <div class="cr" onclick="showModal('gd1')"><span class="cr-l">1학년</span><div class="cr-bw"><div class="cr-b" style="width:14%"></div></div><span class="cr-n">1</span></div>
+      <div class="cr cr-zero"><span class="cr-l">N수생</span><div class="cr-bw"></div><span class="cr-n">0</span></div>
+      <div class="cr" onclick="showModal('gdEd')"><span class="cr-l">편입</span><div class="cr-bw"><div class="cr-b" style="width:14%"></div></div><span class="cr-n">1</span></div>
+    </div>
+    <div style="padding:8px 12px;background:#F9FAFB;border-top:1px solid var(--bd);font-size:11px;color:var(--mu)">
+      리체학원 동시수강 → 명단에서 <span style="background:var(--pl);color:var(--p2);padding:1px 6px;border-radius:3px;font-size:9.5px;font-weight:700">리체</span> 색상 표시
+    </div>
+  </div>
+  <div class="cb">
+    <div class="cb-hd" style="background:#F5F3FF"><div><div class="cb-lbl" style="color:#6C5CE7">공무원 체력 🔥 시즌</div><div style="font-size:9.5px;color:var(--mu)">3월 대규모 시즌반</div></div><div class="cb-tot" style="color:#6C5CE7">144</div></div>
+    <div class="cb-rows">
+      <div class="cr" onclick="showModal('gdGov')"><span class="cr-l">경찰 (시즌68+일반4)</span><div class="cr-bw"><div class="cr-b" style="width:51%"></div></div><span class="cr-n">73</span></div>
+      <div class="cr" onclick="showModal('gdGov')"><span class="cr-l">소방 (시즌70+일반1)</span><div class="cr-bw"><div class="cr-b" style="width:49%;background:var(--p2)"></div></div><span class="cr-n" style="color:var(--p2)">71</span></div>
+      <div class="cr cr-zero"><span class="cr-l">경호처/국정원</span><div class="cr-bw"></div><span class="cr-n">0</span></div>
+    </div>
+  </div>
+</div>
+<div class="g2">
+  <div class="card">
+    <div class="ch"><div class="ct">강사 급여 (월별)</div><div class="csm">클릭하여 상세 보기</div></div>
+    <div class="cb">
+      <div class="cb-hd" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="cb-lbl">2026-03 (최신)</div><div class="cb-tot" style="font-size:14px">12,643,186원</div></div>
+      <div style="display:none;padding:6px 10px">
+        <div class="tl"><div class="av">이</div><div class="tl-info"><div class="tl-nm">이성호</div><div class="tl-sub">원장</div></div><div class="tl-amt">7,325,500원</div></div>
+        <div class="tl"><div class="av">최</div><div class="tl-info"><div class="tl-nm">최규민</div><div class="tl-sub">130h · 11,000/h</div></div><div class="tl-amt">1,610,442원</div></div>
+        <div class="tl"><div class="av">김</div><div class="tl-info"><div class="tl-nm">김형태</div><div class="tl-sub">95h · 12,000/h</div></div><div class="tl-amt">1,271,798원</div></div>
+        <div class="tl"><div class="av">이</div><div class="tl-info"><div class="tl-nm">이재원</div><div class="tl-sub">56.5h</div></div><div class="tl-amt">712,679원</div></div>
+        <div class="tl"><div class="av">신</div><div class="tl-info"><div class="tl-nm">신준환</div><div class="tl-sub">51h · 12,000/h</div></div><div class="tl-amt">710,165원</div></div>
+        <div class="tl"><div class="av">외</div><div class="tl-info"><div class="tl-nm">김준식·성필준·정의환</div><div class="tl-sub">시급제</div></div><div class="tl-amt">838,099원</div></div>
+      </div>
+    </div>
+    <div class="cb" style="margin-top:6px">
+      <div class="cb-hd" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="cb-lbl">2026-02</div><div class="cb-tot" style="font-size:14px">5,842,283원</div></div>
+      <div style="display:none;padding:8px 14px;font-size:12px;color:var(--mu)">강사 8명 합산 · 월 정산 완료</div>
+    </div>
+    <div class="cb" style="margin-top:6px">
+      <div class="cb-hd" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="cb-lbl">2026-01</div><div class="cb-tot" style="font-size:14px">8,329,245원</div></div>
+      <div style="display:none;padding:8px 14px;font-size:12px;color:var(--mu)">강사 8명 합산 · 월 정산 완료</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch">
+      <div class="ct">팀무강동 순수익</div>
+      <div class="togs" id="gd-yr-tog">
+        <button class="tog on" onclick="gdTogYr(2024,this)" style="font-size:10px;padding:3px 8px">2024</button>
+        <button class="tog on" onclick="gdTogYr(2025,this)" style="font-size:10px;padding:3px 8px">2025</button>
+        <button class="tog on" onclick="gdTogYr(2026,this)" style="font-size:10px;padding:3px 8px">2026</button>
+      </div>
+    </div>
+    <div class="cw"><canvas id="gd-ch"></canvas></div>
+  </div>
+</div>
+</div><!-- /gd -->
+
+<!-- ══ 리체 ══ -->
+<div class="pg" id="pg-lc">
+<div class="stt">리드체인지</div>
+<div class="sts">2026년 4월 기준 · 학원+스카 · 강사 5명 · 수강생 40명</div>
+<div class="g4 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">학원 매출 (3월)</div><div class="kv">1,910만원</div><div class="ks">전월 2,155만 대비 -11%</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">스카 매출 (3월)</div><div class="kv">541만원</div><div class="ks">일반 393만 + 리체연계 148만</div></div>
+  <div class="kc"><div class="kc-top" style="background:#4A00E0"></div><div class="kl">순수익 1~3월</div><div class="kv txt-profit">+2,160만원</div><div class="ks">월 평균 720만</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">담당 강사</div><div class="kv">5명</div><div class="ks">국어 3명 · 영어 2명</div></div>
+</div>
+<div class="g2 mb16">
+  <!-- 수업 목록 + 매출 -->
+  <div class="card">
+    <div class="ch"><div class="ct">수업별 현황</div><div class="csm">인원 · 월 수납액 · 클릭→명단(연계학원 표시)</div></div>
+    <table class="tbl">
+      <thead><tr><th>수업</th><th>담당</th><th class="r">인원</th><th class="r">월 수납액</th></tr></thead>
+      <tbody>
+        <tr style="cursor:pointer;background:#F9FAFB" onclick="showModal('lcKA')">
+          <td style="font-weight:700">국어 정규A반</td><td style="color:var(--mu)">함동희</td><td class="r txt-p">10</td><td class="r" style="font-weight:700">4,520,000</td>
+        </tr>
+        <tr style="cursor:pointer" onclick="showModal('lcKC')">
+          <td style="font-weight:700">국어 기초C반</td><td style="color:var(--mu)">함동희</td><td class="r txt-p">9</td><td class="r" style="font-weight:700">4,727,500</td>
+        </tr>
+        <tr style="cursor:pointer;background:#F9FAFB" onclick="showModal('lcKBH')">
+          <td style="font-weight:700">국어 정규B반</td><td style="color:var(--mu)">함동희</td><td class="r txt-p">6</td><td class="r" style="font-weight:700">2,780,000</td>
+        </tr>
+        <tr style="cursor:pointer" onclick="showModal('lcKS')">
+          <td style="font-weight:700">국어 정규S반</td><td style="color:var(--mu)">김춘태</td><td class="r txt-p">3</td><td class="r" style="font-weight:700">1,500,000</td>
+        </tr>
+        <tr style="cursor:pointer;background:#F9FAFB" onclick="showModal('lcKBJ')">
+          <td style="font-weight:700">국어 정규B반</td><td style="color:var(--mu)">정원교</td><td class="r txt-p">3</td><td class="r" style="font-weight:700">1,540,000</td>
+        </tr>
+        <tr style="cursor:pointer" onclick="showModal('lcEH')">
+          <td style="font-weight:700">영어 기초A반</td><td style="color:var(--mu)">김하류</td><td class="r txt-p">10</td><td class="r" style="font-weight:700">4,667,500</td>
+        </tr>
+        <tr style="cursor:pointer;background:#F9FAFB" onclick="showModal('lcES')">
+          <td style="font-weight:700">영어 정규S반</td><td style="color:var(--mu)">김하류</td><td class="r txt-p">8</td><td class="r" style="font-weight:700">4,650,000</td>
+        </tr>
+        <tr style="cursor:pointer" onclick="showModal('lcEPA')">
+          <td style="font-weight:700">영어 정규A반</td><td style="color:var(--mu)">박동근</td><td class="r txt-p">5</td><td class="r" style="font-weight:700">2,310,000</td>
+        </tr>
+        <tr style="cursor:pointer;background:#F9FAFB" onclick="showModal('lcEPB')">
+          <td style="font-weight:700">영어 기초B반</td><td style="color:var(--mu)">박동근</td><td class="r txt-p">4</td><td class="r" style="font-weight:700">1,880,000</td>
+        </tr>
+        <tr class="tf"><td colspan="2">합계</td><td class="r txt-p">40명</td><td class="r txt-p">28,575,000</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:8px;font-size:10px;color:var(--mu)">※ 미납 제외 기준 · 수납합계는 실제 상이할 수 있음</div>
+  </div>
+  <!-- 스카 + 차트 -->
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div class="card">
+      <div class="ch"><div class="ct">스카 매출 비중 (3월)</div><div class="csm">총 5,410,000원</div></div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="flex-shrink:0;width:110px;height:110px;position:relative"><canvas id="sca-pie"></canvas></div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--p)"></div>
+            <div>
+              <div style="font-size:11px;color:var(--mu)">일반 스카</div>
+              <div style="font-size:16px;font-weight:900">3,930,000원</div>
+              <div style="font-size:10px;color:var(--mu)">72.6%</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--pl)"></div>
+            <div>
+              <div style="font-size:11px;color:var(--mu)">리체연계 스카</div>
+              <div style="font-size:16px;font-weight:900;color:var(--p2)">1,480,000원</div>
+              <div style="font-size:10px;color:var(--mu)">27.4%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch">
+        <div class="ct">리드체인지 순수익</div>
+        <div class="togs" id="lc-yr-tog">
+          <button class="tog on" onclick="lcTogYr(2024,this)" style="font-size:10px;padding:3px 8px">2024</button>
+          <button class="tog on" onclick="lcTogYr(2025,this)" style="font-size:10px;padding:3px 8px">2025</button>
+          <button class="tog on" onclick="lcTogYr(2026,this)" style="font-size:10px;padding:3px 8px">2026</button>
+        </div>
+      </div>
+      <div class="cw"><canvas id="lc-ch"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 수강 유형별 인원 분석 -->
+  <div class="card mb16" style="margin-top:16px">
+    <div class="ch"><div class="ct">수강 유형별 인원 분석</div><div class="csm">2026-04 기준 · 클릭 시 수강생 명단</div></div>
+    <div class="g4" style="margin-bottom:14px">
+      <div style="text-align:center;padding:12px;background:var(--plb);border-radius:10px"><div style="font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase">전체</div><div style="font-size:24px;font-weight:900;color:var(--bk)">40명</div></div>
+      <div style="text-align:center;padding:12px;background:var(--plb);border-radius:10px"><div style="font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase">생활관리 O</div><div style="font-size:24px;font-weight:900;color:#4A00E0">28명</div><div style="font-size:10px;color:var(--mu)">70%</div></div>
+      <div style="text-align:center;padding:12px;border:1px solid var(--bd);border-radius:10px"><div style="font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase">생활관리 X</div><div style="font-size:24px;font-weight:900;color:#D63031">12명</div><div style="font-size:10px;color:var(--mu)">30%</div></div>
+      <div style="text-align:center;padding:12px;background:var(--plb);border-radius:10px"><div style="font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase">팀무 연계</div><div style="font-size:24px;font-weight:900;color:#4A00E0">8명</div><div style="font-size:10px;color:var(--mu)">20%</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:14px">
+      <div style="text-align:center"><div class="cwsm"><canvas id="lc-type-pie"></canvas></div><div style="font-size:10px;color:var(--mu);margin-top:4px">수강 유형별 비율</div></div>
+      <div style="text-align:center"><div class="cwsm"><canvas id="lc-mgmt-pie"></canvas></div><div style="font-size:10px;color:var(--mu);margin-top:4px">생활관리 참여율</div></div>
+    </div>
+    <table class="tbl">
+      <tr><th>수강 유형</th><th class="r">인원</th><th class="r">비율</th><th>설명</th></tr>
+      <tr style="cursor:pointer" onclick="showMktDetail('lc_kor_eng_mgmt')"><td style="font-weight:700;color:#4A00E0">국어 + 영어 + 생활관리</td><td class="r" style="font-weight:900;color:#4A00E0;font-size:15px">18명</td><td class="r" style="font-weight:700">45%</td><td>풀패키지 (최고 단가)</td></tr>
+      <tr style="cursor:pointer" onclick="showMktDetail('lc_kor_eng')"><td style="font-weight:700;color:var(--p)">국어 + 영어</td><td class="r" style="font-weight:900;font-size:15px">7명</td><td class="r" style="font-weight:700">17.5%</td><td>두 과목 · 관리 없음</td></tr>
+      <tr style="cursor:pointer" onclick="showMktDetail('lc_kor_mgmt')"><td>국어 + 생활관리</td><td class="r" style="font-weight:700">6명</td><td class="r">15%</td><td>한 과목 + 관리</td></tr>
+      <tr style="cursor:pointer" onclick="showMktDetail('lc_eng_mgmt')"><td>영어 + 생활관리</td><td class="r" style="font-weight:700">4명</td><td class="r">10%</td><td>한 과목 + 관리</td></tr>
+      <tr style="cursor:pointer" onclick="showMktDetail('lc_kor_only')"><td>국어만</td><td class="r">3명</td><td class="r">7.5%</td><td>한 과목만</td></tr>
+      <tr style="cursor:pointer" onclick="showMktDetail('lc_eng_only')"><td>영어만</td><td class="r">1명</td><td class="r">2.5%</td><td>한 과목만</td></tr>
+      <tr style="cursor:pointer" onclick="showMktDetail('lc_mgmt_only')"><td style="color:#D63031">생활관리만</td><td class="r">1명</td><td class="r">2.5%</td><td>수업 없이 관리만</td></tr>
+    </table>
+    <div style="margin-top:12px;padding:10px 12px;background:var(--plb);border-radius:8px;font-size:11px;color:var(--mu)">
+      <b style="color:var(--bk)">요약:</b> 한 과목 수강 <b>14명</b>(35%) · 두 과목 수강 <b>25명</b>(62.5%) · 생활관리만 <b>1명</b>(2.5%)<br>
+      생활관리 참여율 <b style="color:#4A00E0">70%</b> — 관리 미참여 학생 12명에 대한 전환 유도 필요
+    </div>
+  </div>
+</div>
+</div><!-- /lc -->
+
+<!-- ══ 순수익 ══ -->
+<div class="pg" id="pg-profit">
+<div class="stt">순수익 현황</div>
+<div class="sts">결산장부 기준 · 3개년 비교 · 클릭하면 연도별 상세 표</div>
+<div class="ptabs">
+  <button class="ptab on" onclick="setPY(2026,this)">2026년</button>
+  <button class="ptab" onclick="setPY(2025,this)">2025년</button>
+  <button class="ptab" onclick="setPY(2024,this)">2024년</button>
+</div>
+<div class="g3 mb16" id="pk"></div>
+<div class="card mb16">
+  <div class="ch">
+    <div class="ct">캠퍼스별 월별 순수익 비교 (단위: 만원)</div>
+    <div class="togs" id="profit-yr-tog">
+      <button class="tog on" onclick="profitTogYr(2024,this)">2024</button>
+      <button class="tog on" onclick="profitTogYr(2025,this)">2025</button>
+      <button class="tog on" onclick="profitTogYr(2026,this)">2026</button>
+    </div>
+  </div>
+  <div class="cw"><canvas id="profit-ch"></canvas></div>
+</div>
+<div class="card" style="overflow-x:auto">
+  <div class="ch"><div class="ct">월별 순수익 상세</div><span class="csm">단위: 원</span></div>
+  <table class="tbl" id="profit-tbl"></table>
+</div>
+</div><!-- /profit -->
+
+<!-- ══ 지출 ══ -->
+<div class="pg" id="pg-expense">
+<div class="stt">지출 내역</div>
+<div class="sts">전월(1월) → 금월(2월) 정확한 금액 비교 · 증가 보라 · 감소 빨강</div>
+<div class="g3">
+  <div class="card">
+    <div class="ch"><div class="ct">리드체인지</div><div style="display:flex;gap:6px;font-size:10px"><span style="color:var(--mu)">전월</span><span style="font-weight:700">금월</span></div></div>
+    <div class="exp-sec">고정지출</div>
+    <div class="exp-row" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="exp-name" style="font-weight:700">▸ 강사지출</div><div class="exp-prev">15,690,618</div><div class="exp-curr">15,420,000</div><div class="exp-diff d-dn">▼ 270,618</div></div>
+    <div style="display:none;padding:4px 0 4px 16px;border-bottom:1px solid #F9FAFB;font-size:11px;color:var(--mu)">
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">강사 인건비</div><div class="exp-prev">15,512,680</div><div class="exp-curr">14,818,088</div><div class="exp-diff d-dn">▼694,592</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">sk브로드밴드</div><div class="exp-prev">12,063</div><div class="exp-curr">14,068</div><div class="exp-diff d-up">▲2,005</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">복합기(NICEPAY)</div><div class="exp-prev">117,348</div><div class="exp-curr">81,835</div><div class="exp-diff d-dn">▼35,513</div></div>
+    </div>
+    <div class="exp-row" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="exp-name" style="font-weight:700">▸ 4대보험</div><div class="exp-prev">922,474</div><div class="exp-curr">933,851</div><div class="exp-diff d-up">▲ 11,377</div></div>
+    <div style="display:none;padding:4px 0 4px 16px;font-size:11px;color:var(--mu)">
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">국민연금+건강보험+고용+산재</div><div class="exp-prev">902,719</div><div class="exp-curr">933,851</div><div class="exp-diff d-up">▲31,132</div></div>
+    </div>
+    <div class="exp-row"><div class="exp-name">월세·관리비</div><div class="exp-prev">3,905,000</div><div class="exp-curr">3,905,000</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">단말기·통신·렌탈</div><div class="exp-prev">86,300</div><div class="exp-curr">86,300</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-sec">일반지출</div>
+    <div class="exp-row"><div class="exp-name">네이버페이 소모품</div><div class="exp-prev">36,790</div><div class="exp-curr">73,180</div><div class="exp-diff d-up">▲ 36,390</div></div>
+    <div class="exp-row"><div class="exp-name">파워링크 광고</div><div class="exp-prev">80,000</div><div class="exp-curr">30,000</div><div class="exp-diff d-dn">▼ 50,000</div></div>
+    <div class="exp-row" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="exp-name" style="font-weight:700">▸ 기타 일반</div><div class="exp-prev">209,900</div><div class="exp-curr">496,790</div><div class="exp-diff d-up">▲ 286,890</div></div>
+    <div style="display:none;padding:4px 0 4px 16px;font-size:11px;color:var(--mu)">
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">물티슈·A4·A3·휴지</div><div class="exp-prev">0</div><div class="exp-curr">175,330</div><div class="exp-diff d-up">▲175,330</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">티백·돌돌이·청소기필터</div><div class="exp-prev">0</div><div class="exp-curr">73,160</div><div class="exp-diff d-up">▲73,160</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">연간패키지</div><div class="exp-prev">0</div><div class="exp-curr">299,700</div><div class="exp-diff d-up">▲299,700</div></div>
+    </div>
+    <div style="margin-top:8px;padding:8px 10px;background:var(--plb);border-radius:8px;font-size:11px;display:flex;justify-content:space-between">
+      <span style="color:var(--mu)">전월 20,236,121</span><span style="font-weight:700;color:var(--p)">금월 19,935,774 (▼300,347)</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">팀무광진</div><div style="display:flex;gap:6px;font-size:10px"><span style="color:var(--mu)">전월</span><span style="font-weight:700">금월</span></div></div>
+    <div class="exp-sec">고정지출</div>
+    <div class="exp-row"><div class="exp-name">월세</div><div class="exp-prev">3,950,000</div><div class="exp-curr">3,950,000</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">노란우산</div><div class="exp-prev">107,227</div><div class="exp-curr">107,227</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">카드단말기·통신</div><div class="exp-prev">108,330</div><div class="exp-curr">108,330</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-sec">유동고정</div>
+    <div class="exp-row" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="exp-name" style="font-weight:700">▸ 강사지출</div><div class="exp-prev">8,959,312</div><div class="exp-curr">6,424,752</div><div class="exp-diff d-dn">▼ 2,534,560</div></div>
+    <div style="display:none;padding:4px 0 4px 16px;font-size:11px;color:var(--mu)">
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">남태현 (원장)</div><div class="exp-prev">-</div><div class="exp-curr">1,389,385</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">최우진 (편입)</div><div class="exp-prev">-</div><div class="exp-curr">421,225</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">천성준 (공무원)</div><div class="exp-prev">-</div><div class="exp-curr">348,894</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">조은별·김정원·기타</div><div class="exp-prev">-</div><div class="exp-curr">~530,000</div><div class="exp-diff d-na">-</div></div>
+    </div>
+    <div class="exp-row"><div class="exp-name">유튜브 영상제작</div><div class="exp-prev">725,250</div><div class="exp-curr">725,250</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">4대보험</div><div class="exp-prev">922,474</div><div class="exp-curr">933,851</div><div class="exp-diff d-up">▲ 11,377</div></div>
+    <div class="exp-sec">일반지출</div>
+    <div class="exp-row"><div class="exp-name">주유·교통</div><div class="exp-prev">380,000</div><div class="exp-curr">420,000</div><div class="exp-diff d-up">▲ 40,000</div></div>
+    <div class="exp-row"><div class="exp-name">식대·소모품</div><div class="exp-prev">280,000</div><div class="exp-curr">195,000</div><div class="exp-diff d-dn">▼ 85,000</div></div>
+    <div class="exp-row"><div class="exp-name">홈페이지·광고</div><div class="exp-prev">1,878,232</div><div class="exp-curr">1,450,000</div><div class="exp-diff d-dn">▼ 428,232</div></div>
+    <div style="margin-top:8px;padding:8px 10px;background:var(--plb);border-radius:8px;font-size:11px;display:flex;justify-content:space-between">
+      <span style="color:var(--mu)">전월 18,310,825</span><span style="font-weight:700;color:var(--p)">금월 17,298,281 (▼1,012,544)</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">팀무강동</div><div style="display:flex;gap:6px;font-size:10px"><span style="color:var(--mu)">전월</span><span style="font-weight:700">금월</span></div></div>
+    <div class="exp-sec">고정지출</div>
+    <div class="exp-row"><div class="exp-name">월세·관리비</div><div class="exp-prev">4,400,000</div><div class="exp-curr">4,400,000</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">카드단말기·통신</div><div class="exp-prev">193,261</div><div class="exp-curr">193,261</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-sec">유동고정</div>
+    <div class="exp-row" style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"><div class="exp-name" style="font-weight:700">▸ 강사지출</div><div class="exp-prev">5,842,283</div><div class="exp-curr">12,643,186</div><div class="exp-diff d-up">▲ 6,800,903</div></div>
+    <div style="display:none;padding:4px 0 4px 16px;font-size:11px;color:var(--mu)">
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">이성호 (원장)</div><div class="exp-prev">-</div><div class="exp-curr">7,325,500</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">최규민 (130h)</div><div class="exp-prev">-</div><div class="exp-curr">1,610,442</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">김형태 (95h)</div><div class="exp-prev">-</div><div class="exp-curr">1,271,798</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">이재원 (56.5h)</div><div class="exp-prev">-</div><div class="exp-curr">712,679</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">신준환 (51h)</div><div class="exp-prev">-</div><div class="exp-curr">710,165</div><div class="exp-diff d-na">-</div></div>
+      <div class="exp-row"><div class="exp-name" style="color:var(--mu)">김준식·성필준·정의환</div><div class="exp-prev">-</div><div class="exp-curr">838,099</div><div class="exp-diff d-na">-</div></div>
+      <div style="padding:4px 0;font-size:10px;color:#D63031">※ 3월 시즌 인원 증가로 강사비 급증</div>
+    </div>
+    <div class="exp-row"><div class="exp-name">유튜브 영상제작</div><div class="exp-prev">725,250</div><div class="exp-curr">725,250</div><div class="exp-diff d-na">변동없음</div></div>
+    <div class="exp-row"><div class="exp-name">4대보험</div><div class="exp-prev">922,474</div><div class="exp-curr">933,851</div><div class="exp-diff d-up">▲ 11,377</div></div>
+    <div class="exp-row"><div class="exp-name">전기료·인터넷</div><div class="exp-prev">482,920</div><div class="exp-curr">390,000</div><div class="exp-diff d-dn">▼ 92,920</div></div>
+    <div class="exp-sec">일반지출</div>
+    <div class="exp-row"><div class="exp-name">쏘카·주유</div><div class="exp-prev">400,000</div><div class="exp-curr">350,000</div><div class="exp-diff d-dn">▼ 50,000</div></div>
+    <div class="exp-row"><div class="exp-name">학원용품</div><div class="exp-prev">550,000</div><div class="exp-curr">820,000</div><div class="exp-diff d-up">▲ 270,000</div></div>
+    <div class="exp-row"><div class="exp-name">식대·소모품</div><div class="exp-prev">381,570</div><div class="exp-curr">290,000</div><div class="exp-diff d-dn">▼ 91,570</div></div>
+    <div style="margin-top:8px;padding:8px 10px;background:var(--plb);border-radius:8px;font-size:11px;display:flex;justify-content:space-between">
+      <span style="color:var(--mu)">전월 17,384,720</span><span style="font-weight:700;color:#D63031">금월 18,210,985 (▲826,265)</span>
+    </div>
+  </div>
+</div>
+</div><!-- /expense -->
+
+<!-- ══ 개인지출 ══ -->
+<div class="pg" id="pg-personal">
+<div class="stt">개인 지출</div>
+<div class="sts">이윤범 · 김아란 — 2026년 4월 예상 지출 기준 (1월 실적 기반 추정)</div>
+<div class="g2 mb16">
+  <div class="card">
+    <div class="ch"><div><div class="ct">이윤범 (2026년 4월)</div><div class="csm">예상 지출 약 5,820,000원</div></div><div style="font-size:20px;font-weight:900;color:var(--p)">~5,820,000원</div></div>
+    <div class="exp-sec">고정지출 (확정)</div>
+    <div class="exp-row"><div class="exp-name">보험 (국민·현대·삼성화재)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">287,420</div></div>
+    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">국민카드 자동이체 · 3종 보험료</div>
+    <div class="exp-row"><div class="exp-name">통신 (SKT · LG)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">185,190</div></div>
+    <div class="exp-row"><div class="exp-name">이자 (카카오페이)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">685,456</div></div>
+    <div class="exp-row"><div class="exp-name">할부 청구 (농구골대 등)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">4,176,000</div></div>
+    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">삼성카드 5개월 할부 · 4월 만기</div>
+    <div class="exp-sec">일반지출 (추정)</div>
+    <div class="exp-row"><div class="exp-name">외식·식대</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 430,000</div></div>
+    <div class="exp-row"><div class="exp-name">교통 (주유·도로)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 410,000</div></div>
+    <div class="exp-row"><div class="exp-name">쿠팡 소모품 (육아·생활)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 600,000</div></div>
+    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">기저귀·분유·생활용품 등 (1월 대비 감소 추정)</div>
+    <div class="exp-row"><div class="exp-name">개인쇼핑 · 기타</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 380,000</div></div>
+    <div style="margin-top:8px;padding:8px 10px;background:var(--plb);border-radius:8px;font-size:10.5px;color:var(--mu)">
+      ※ 4월 할부 청구액(4,176,000원) 포함 · 1월 실적(6,306,873원) 대비 할부 비중 증가
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div><div class="ct">김아란 (2026년 4월)</div><div class="csm">예상 지출 약 2,980,000원</div></div><div style="font-size:20px;font-weight:900;color:var(--p2)">~2,980,000원</div></div>
+    <div class="exp-sec">고정지출 (확정)</div>
+    <div class="exp-row"><div class="exp-name">SKT 통신료</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">88,420</div></div>
+    <div class="exp-row"><div class="exp-name">카카오페이 이자</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">934,426</div></div>
+    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">국민아란통장 자동이체 · 월 934,426원</div>
+    <div class="exp-row"><div class="exp-name">보험 4종 (DB·KB·삼성·현대)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">233,826</div></div>
+    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">DB화재 80,000 / KB생명 62,300 / 삼성 54,800 / 현대 36,726</div>
+    <div class="exp-row"><div class="exp-name">넷플릭스</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">22,000</div></div>
+    <div class="exp-row"><div class="exp-name">아파트 관리비</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">355,810</div></div>
+    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">하남 아파트 · 아란삼성카드 자동이체</div>
+    <div class="exp-sec">일반지출 (추정)</div>
+    <div class="exp-row"><div class="exp-name">외식</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 200,000</div></div>
+    <div class="exp-row"><div class="exp-name">의료 (산부인과 등)</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 120,000</div></div>
+    <div style="padding:2px 0 5px 8px;font-size:10px;color:var(--mu);border-bottom:1px solid #F9FAFB">정기 검진 · 약국 포함</div>
+    <div class="exp-row"><div class="exp-name">육아·식자재·생활</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 250,000</div></div>
+    <div class="exp-row"><div class="exp-name">개인쇼핑 · 기타</div><div class="exp-curr" style="flex:1;text-align:right;font-size:12px">약 280,000</div></div>
+    <div style="margin-top:8px;padding:8px 10px;background:var(--plb);border-radius:8px;font-size:10.5px;color:var(--mu)">
+      ※ 4월은 여행비 없음 · 1월(4,031,137원) 대비 약 1,051,137원 감소 추정
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="ch"><div class="ct">전체 순수익 (사업 + 개인대출 포함)</div></div>
+  <div class="g3">
+    <div style="text-align:center;padding:14px;border-radius:10px;background:#FFF0ED;border:1px solid #FECACA">
+      <div style="font-size:10px;color:var(--mu)">2026년 1월</div><div style="font-size:22px;font-weight:900;color:#D63031">-4,183,546원</div>
+    </div>
+    <div style="text-align:center;padding:14px;border-radius:10px;background:#FFF0ED;border:1px solid #FECACA">
+      <div style="font-size:10px;color:var(--mu)">2026년 2월</div><div style="font-size:22px;font-weight:900;color:#D63031">-2,857,324원</div>
+    </div>
+    <div style="text-align:center;padding:14px;border-radius:10px;background:var(--plb);border:1px solid var(--pl)">
+      <div style="font-size:10px;color:var(--mu)">2026년 3월</div><div style="font-size:22px;font-weight:900;color:var(--p)">+18,420,568원</div>
+      <div style="font-size:9.5px;color:var(--mu)">강동 시즌</div>
+    </div>
+  </div>
+</div>
+</div><!-- /personal -->
+
+<!-- ══ 카드할부 ══ -->
+<div class="pg" id="pg-install">
+<div class="stt">카드 할부 현황</div>
+<div class="sts">만기 개월 기준 정렬 · 이번달 총 청구 9,125,841원</div>
+<div class="g3 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">이번달 총 청구</div><div class="kv">9,125,841원</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">이번달 만기 (4월)</div><div class="kv">9건</div><div class="ks">8,191,990원</div></div>
+  <div class="kc"><div class="kc-top" style="background:var(--p2)"></div><div class="kl">2개월 후 만기 (6월)</div><div class="kv">1건</div><div class="ks">933,851원</div></div>
+</div>
+<div class="card" style="overflow-x:auto">
+  <div class="ch"><div class="ct">할부 내역 — 만기 개월 기준 정렬</div></div>
+  <table class="tbl">
+    <thead><tr><th>만기일</th><th>D-Month</th><th>결제카드</th><th>내역</th><th class="r">개월</th><th class="r">원금</th><th class="r">월 청구</th></tr></thead>
+    <tbody>
+      <tr><td style="font-weight:800">2026.04.25</td><td><span class="dm-now">이번달 만기</span></td><td>삼성윤범</td><td><b>농구골대+매트+경찰장비</b></td><td class="r">5개월</td><td class="r">20,880,000</td><td class="r" style="font-size:15px;font-weight:900;color:var(--p)">4,176,000</td></tr>
+      <tr><td style="font-weight:800">2026.04.25</td><td><span class="dm-now">이번달 만기</span></td><td>삼성윤범</td><td>방음공사 1차 자재비</td><td class="r">5개월</td><td class="r">5,220,000</td><td class="r txt-p">1,044,000</td></tr>
+      <tr><td style="font-weight:800">2026.04.25</td><td><span class="dm-now">이번달 만기</span></td><td>롯데윤범</td><td>방음공사 1차 자재비</td><td class="r">5개월</td><td class="r">5,220,000</td><td class="r txt-p">1,044,000</td></tr>
+      <tr><td style="font-weight:800">2026.04.25</td><td><span class="dm-now">이번달 만기</span></td><td>롯데윤범</td><td>방음공사 잔금</td><td class="r">5개월</td><td class="r">4,489,200</td><td class="r txt-p">897,840</td></tr>
+      <tr><td style="font-weight:800">2026.04.25</td><td><span class="dm-now">이번달 만기</span></td><td>광주윤범</td><td>4대보험 (3개월)</td><td class="r">3개월</td><td class="r">2,801,554</td><td class="r txt-p">933,851</td></tr>
+      <tr><td style="font-weight:800">2026.04.25</td><td><span class="dm-now">이번달 만기</span></td><td>농협윤범</td><td>세금</td><td class="r">6개월</td><td class="r">1,857,824</td><td class="r txt-p">309,637</td></tr>
+      <tr><td style="font-weight:800">2026.04.25</td><td><span class="dm-now">이번달 만기</span></td><td>국민윤범</td><td>악사손해보험</td><td class="r">5개월</td><td class="r">1,751,150</td><td class="r txt-p">350,230</td></tr>
+      <tr><td style="font-weight:800">2026.04.25</td><td><span class="dm-now">이번달 만기</span></td><td>농협윤범</td><td>세금</td><td class="r">6개월</td><td class="r">488,658</td><td class="r txt-p">81,443</td></tr>
+      <tr><td style="font-weight:800">2026.04.25</td><td><span class="dm-now">이번달 만기</span></td><td>신한윤범</td><td>리체스카 1월 월세</td><td class="r">3개월</td><td class="r">866,520</td><td class="r txt-p">288,840</td></tr>
+      <tr><td style="color:var(--p2);font-weight:800">2026.06.25</td><td><span class="dm-soon">D-2개월</span></td><td>광주윤범</td><td>3월 4대보험 (3개월)</td><td class="r">3개월</td><td class="r">2,801,554</td><td class="r txt-p2">933,851</td></tr>
+      <tr class="tf"><td colspan="5" style="font-weight:800">4월 총 청구 합계</td><td class="r"></td><td class="r txt-p" style="font-size:15px;font-weight:900">9,125,841원</td></tr>
+    </tbody>
+  </table>
+</div>
+</div><!-- /install -->
+
+<!-- ══ 대출 ══ -->
+<div class="pg" id="pg-loan">
+<div class="stt">대출 현황</div>
+<div class="sts">2026년 4월 기준 · 월 상환 약 4,015,291원</div>
+<div class="g3 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">총 대출 잔액</div><div class="kv">약 470M원</div><div class="ks">신한주택 포함</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">월 상환 합계</div><div class="kv txt-p">4,015,291원</div><div class="ks">1월 기준</div></div>
+  <div class="kc"><div class="kc-top" style="background:var(--p2)"></div><div class="kl">대출 건수</div><div class="kv">11건</div></div>
+</div>
+<div class="card" style="overflow-x:auto">
+  <table class="tbl">
+    <thead><tr><th>대출명</th><th class="r">잔액</th><th class="r">이자율</th><th>출금계좌</th><th class="r">월 상환</th></tr></thead>
+    <tbody>
+      <tr><td><b>신한주택대출 (아파트)</b></td><td class="r txt-p" style="font-weight:800">393,165,581</td><td class="r">3.64%</td><td>신한은행</td><td class="r">1,583,327</td></tr>
+      <tr><td>소상공인 고용연계융자</td><td class="r">5,000,150</td><td class="r">1%</td><td>국민개인통장</td><td class="r">281,073</td></tr>
+      <tr><td>저신용소상공인융자-1</td><td class="r">2,500,210</td><td class="r">1.5%</td><td>국민개인통장</td><td class="r">280,247</td></tr>
+      <tr><td>저신용소상공인융자-2</td><td class="r">1,111,360</td><td class="r">1.5%</td><td>국민개인통장</td><td class="r">561,272</td></tr>
+      <tr><td>광진구특별보증이차보전</td><td class="r">50,000,000</td><td class="r">0.82%</td><td>광진통장</td><td class="r">—</td></tr>
+      <tr><td>서울특별경영안정자금</td><td class="r">2,080,000</td><td class="r">3.84%</td><td>하나은행</td><td class="r">281,645</td></tr>
+      <tr><td>손실보상선지급 x2</td><td class="r">1,293,670</td><td class="r">1%</td><td>국민개인통장</td><td class="r">116,438</td></tr>
+      <tr><td>집합금지임차료융자 x2</td><td class="r">2,500,490</td><td class="r">1.9%</td><td>광진통장</td><td class="r">562,263</td></tr>
+      <tr><td>희망대출</td><td class="r">3,055,750</td><td class="r">1%</td><td>국민개인통장</td><td class="r">282,016</td></tr>
+      <tr><td>중소기업자금 (기업은행)</td><td class="r">30,000,000</td><td class="r">2.63%</td><td>국민개인통장</td><td class="r">67,010</td></tr>
+      <tr class="tf"><td>월 상환 합계</td><td class="r"></td><td class="r"></td><td></td><td class="r txt-p" style="font-size:15px;font-weight:900">4,015,291원</td></tr>
+    </tbody>
+  </table>
+</div>
+</div><!-- /loan -->
+
+<!-- ══ MARKETING ══ -->
+<div class="pg" id="pg-mkt">
+<div class="stt">마케팅</div>
+<div class="sts">캠퍼스별 블로그 · 전단지 · 유입 경로 분석</div>
+
+<div class="ptabs mb12" id="mkt-tabs">
+  <button class="ptab on" onclick="swMkt('all',this)">전체</button>
+  <button class="ptab" onclick="swMkt('gj',this)">팀무광진</button>
+  <button class="ptab" onclick="swMkt('gd',this)">팀무강동</button>
+  <button class="ptab" onclick="swMkt('lc',this)">리드체인지</button>
+</div>
+
+<!-- 전체 -->
+<div id="mkt-all">
+<div class="g3 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">리드체인지 블로그</div><div class="kv txt-p">240건</div><div class="ks">가장 활발 · 음대/미대 핵심 채널</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">팀무강동 블로그</div><div class="kv">163건</div><div class="ks">활발 유지 중</div></div>
+  <div class="kc"><div class="kc-top" style="background:#C0392B"></div><div class="kl">팀무광진 블로그</div><div class="kv" style="color:#C0392B">115건</div><div class="ks" style="color:#C0392B">⚠ 2024 말 이후 거의 비활성</div></div>
+</div>
+
+<!-- 월별 블로그 게시글 추이 -->
+<div class="card mb16">
+  <div class="ch"><div class="ct">월별 블로그 게시글 수</div><div class="csm">전월 대비 증감 · <span style="color:var(--p);font-weight:700">▲증가</span> <span style="color:#D63031;font-weight:700">▼감소</span></div></div>
+  <div style="overflow-x:auto"><table class="tbl">
+    <tr><th>월</th><th class="r">광진</th><th class="r">증감</th><th class="r">강동</th><th class="r">증감</th><th class="r">리체</th><th class="r">증감</th><th class="r" style="background:var(--pl)">합계</th></tr>
+    <tr><td>2025-01</td><td class="r">3</td><td class="r">-</td><td class="r">2</td><td class="r">-</td><td class="r">5</td><td class="r">-</td><td class="r" style="font-weight:800">10</td></tr>
+    <tr><td>2025-02</td><td class="r">1</td><td class="r" style="color:#D63031;font-weight:700">▼2</td><td class="r">3</td><td class="r" style="color:var(--p);font-weight:700">▲1</td><td class="r">7</td><td class="r" style="color:var(--p);font-weight:700">▲2</td><td class="r" style="font-weight:800">11</td></tr>
+    <tr><td>2025-03</td><td class="r">3</td><td class="r" style="color:var(--p);font-weight:700">▲2</td><td class="r">6</td><td class="r" style="color:var(--p);font-weight:700">▲3</td><td class="r" style="font-weight:900;color:var(--p)">14</td><td class="r" style="color:var(--p);font-weight:700">▲7</td><td class="r" style="font-weight:800;color:var(--p)">23</td></tr>
+    <tr><td>2025-04</td><td class="r">2</td><td class="r" style="color:#D63031;font-weight:700">▼1</td><td class="r">7</td><td class="r" style="color:var(--p);font-weight:700">▲1</td><td class="r">11</td><td class="r" style="color:#D63031;font-weight:700">▼3</td><td class="r" style="font-weight:800">20</td></tr>
+    <tr><td>2025-05</td><td class="r">5</td><td class="r" style="color:var(--p);font-weight:700">▲3</td><td class="r">7</td><td class="r">-</td><td class="r">6</td><td class="r" style="color:#D63031;font-weight:700">▼5</td><td class="r" style="font-weight:800">18</td></tr>
+    <tr><td>2025-06</td><td class="r">4</td><td class="r" style="color:#D63031;font-weight:700">▼1</td><td class="r">4</td><td class="r" style="color:#D63031;font-weight:700">▼3</td><td class="r">3</td><td class="r" style="color:#D63031;font-weight:700">▼3</td><td class="r" style="font-weight:800">11</td></tr>
+    <tr><td>2025-07</td><td class="r" style="font-weight:900;color:var(--p)">11</td><td class="r" style="color:var(--p);font-weight:700">▲7</td><td class="r">5</td><td class="r" style="color:var(--p);font-weight:700">▲1</td><td class="r">4</td><td class="r" style="color:var(--p);font-weight:700">▲1</td><td class="r" style="font-weight:800;color:var(--p)">20</td></tr>
+    <tr><td>2025-08</td><td class="r">6</td><td class="r" style="color:#D63031;font-weight:700">▼5</td><td class="r">5</td><td class="r">-</td><td class="r">5</td><td class="r" style="color:var(--p);font-weight:700">▲1</td><td class="r" style="font-weight:800">16</td></tr>
+    <tr><td>2025-09</td><td class="r">3</td><td class="r" style="color:#D63031;font-weight:700">▼3</td><td class="r">5</td><td class="r">-</td><td class="r">8</td><td class="r" style="color:var(--p);font-weight:700">▲3</td><td class="r" style="font-weight:800">16</td></tr>
+    <tr><td>2025-10</td><td class="r" style="color:#D63031">1</td><td class="r" style="color:#D63031;font-weight:700">▼2</td><td class="r">4</td><td class="r" style="color:#D63031;font-weight:700">▼1</td><td class="r">6</td><td class="r" style="color:#D63031;font-weight:700">▼2</td><td class="r" style="font-weight:800">11</td></tr>
+    <tr><td>2025-11</td><td class="r">3</td><td class="r" style="color:var(--p);font-weight:700">▲2</td><td class="r">4</td><td class="r">-</td><td class="r">8</td><td class="r" style="color:var(--p);font-weight:700">▲2</td><td class="r" style="font-weight:800">15</td></tr>
+    <tr><td>2025-12</td><td class="r">4</td><td class="r" style="color:var(--p);font-weight:700">▲1</td><td class="r">3</td><td class="r" style="color:#D63031;font-weight:700">▼1</td><td class="r">7</td><td class="r" style="color:#D63031;font-weight:700">▼1</td><td class="r" style="font-weight:800">14</td></tr>
+    <tr style="background:#F9FAFB"><td style="font-weight:800">2026-01</td><td class="r">4</td><td class="r">-</td><td class="r">3</td><td class="r">-</td><td class="r">8</td><td class="r" style="color:var(--p);font-weight:700">▲1</td><td class="r" style="font-weight:800">15</td></tr>
+    <tr style="background:#F9FAFB"><td style="font-weight:800">2026-02</td><td class="r" style="color:#D63031;font-weight:900">0</td><td class="r" style="color:#D63031;font-weight:700">▼4</td><td class="r">3</td><td class="r">-</td><td class="r">11</td><td class="r" style="color:var(--p);font-weight:700">▲3</td><td class="r" style="font-weight:800">14</td></tr>
+    <tr style="background:#F9FAFB"><td style="font-weight:800">2026-03</td><td class="r">2</td><td class="r" style="color:var(--p);font-weight:700">▲2</td><td class="r" style="font-weight:900;color:var(--p)">9</td><td class="r" style="color:var(--p);font-weight:700">▲6</td><td class="r" style="font-weight:900;color:var(--p)">19</td><td class="r" style="color:var(--p);font-weight:700">▲8</td><td class="r" style="font-weight:900;color:var(--p)">30</td></tr>
+    <tr style="background:#F9FAFB"><td style="font-weight:800">2026-04</td><td class="r">2</td><td class="r">-</td><td class="r" style="color:#D63031">1</td><td class="r" style="color:#D63031;font-weight:700">▼8</td><td class="r" style="color:#D63031">1</td><td class="r" style="color:#D63031;font-weight:700">▼18</td><td class="r" style="font-weight:800;color:#D63031">4</td></tr>
+  </table></div>
+</div>
+
+<!-- 월별 전단지 배포 내역 -->
+<div class="card mb16">
+  <div class="ch"><div class="ct">월별 전단지 배포 내역</div><div class="csm">어떤 학교에 언제 배포했는지</div></div>
+  <div style="overflow-x:auto"><table class="tbl">
+    <tr><th>월</th><th>캠퍼스</th><th>학교</th><th class="r">횟수</th><th class="r">비용</th></tr>
+    <tr style="background:#F5F3FF"><td rowspan="3" style="font-weight:800;vertical-align:top">2024-12</td><td>강동</td><td>영파여고 · 동북고 · 보성고</td><td class="r">10회</td><td class="r">620,000원</td></tr>
+    <tr style="background:#F5F3FF"><td>광진</td><td>광남고 · 건대부고</td><td class="r">13회</td><td class="r">720,000원</td></tr>
+    <tr style="background:#F5F3FF"><td colspan="3" class="r" style="font-weight:700;color:var(--p2)">소계: 23회 / 1,340,000원</td></tr>
+    <tr><td style="font-weight:800">2025-02</td><td>강동</td><td>영파여고</td><td class="r">1회</td><td class="r">0원</td></tr>
+    <tr style="background:#F5F3FF"><td rowspan="3" style="font-weight:800;vertical-align:top">2025-03</td><td>광진</td><td>건대부고 · 광양고 · 자양고 · 대원남고</td><td class="r">12회</td><td class="r">560,000원</td></tr>
+    <tr style="background:#F5F3FF"><td>강동</td><td>동북고</td><td class="r">6회</td><td class="r">190,000원</td></tr>
+    <tr style="background:#F5F3FF"><td colspan="3" class="r" style="font-weight:700;color:var(--p2)">소계: 18회 / 750,000원</td></tr>
+    <tr style="background:#F5F3FF"><td rowspan="3" style="font-weight:800;vertical-align:top">2025-04</td><td>강동</td><td>보성고 · 동북고 · 오금고 · 성덕고 · 영파여고 · 둔촌고 · 창덕여고 · 감일고</td><td class="r">8회</td><td class="r">370,000원</td></tr>
+    <tr style="background:#F5F3FF"><td>광진</td><td>광양고 · 대원여고</td><td class="r">5회</td><td class="r">310,000원</td></tr>
+    <tr style="background:#F5F3FF"><td colspan="3" class="r" style="font-weight:700;color:var(--p2)">소계: 13회 / 680,000원</td></tr>
+    <tr><td style="font-weight:800">2025-06</td><td>광진</td><td>성수고 · 대원여고</td><td class="r">7회</td><td class="r">330,000원</td></tr>
+    <tr><td style="font-weight:800">2025-07</td><td>광진</td><td>성수고</td><td class="r">8회</td><td class="r">400,000원</td></tr>
+    <tr style="background:#F5F3FF"><td rowspan="3" style="font-weight:800;vertical-align:top">2025-08</td><td>광진</td><td>건대부고</td><td class="r">5회</td><td class="r">250,000원</td></tr>
+    <tr style="background:#F5F3FF"><td>강동</td><td>둔촌고 · 선사고</td><td class="r">7회</td><td class="r">370,000원</td></tr>
+    <tr style="background:#F5F3FF"><td colspan="3" class="r" style="font-weight:700;color:var(--p2)">소계: 12회 / 620,000원</td></tr>
+    <tr><td style="font-weight:800">2025-09</td><td>광진</td><td>광양고 · 대원남고 · 건대부고</td><td class="r">6회</td><td class="r">290,000원</td></tr>
+    <tr><td style="font-weight:800">2025-10</td><td>광진</td><td>자양고 · 건대부고 · 성수고</td><td class="r">8회</td><td class="r">400,000원</td></tr>
+    <tr><td style="font-weight:800">2025-11</td><td>강동</td><td>(일반)</td><td class="r">4회</td><td class="r">560,000원</td></tr>
+    <tr style="background:#F5F3FF"><td rowspan="3" style="font-weight:800;vertical-align:top">2025-12</td><td>광진</td><td>경일고 · 건대부고 · 성수고</td><td class="r">11회</td><td class="r">550,000원</td></tr>
+    <tr style="background:#F5F3FF"><td>강동</td><td>보성고 · 성덕고 · 명일여고</td><td class="r">11회</td><td class="r">590,000원</td></tr>
+    <tr style="background:#F5F3FF"><td colspan="3" class="r" style="font-weight:700;color:var(--p2)">소계: 22회 / 1,140,000원</td></tr>
+    <tr style="background:#F9FAFB"><td rowspan="3" style="font-weight:900;vertical-align:top">2026-03</td><td>광진</td><td>건대부고 · 동대부여고</td><td class="r">16회</td><td class="r">940,000원</td></tr>
+    <tr style="background:#F9FAFB"><td>강동</td><td>보성고 · 선사고</td><td class="r">7회</td><td class="r">700,000원</td></tr>
+    <tr style="background:#F9FAFB"><td colspan="3" class="r" style="font-weight:900;color:var(--p)">소계: 23회 / 1,640,000원</td></tr>
+  </table></div>
+</div>
+
+<!-- 유입 채널 & 비용 효율 -->
+<div class="g2 mb16">
+  <div class="card">
+    <div class="ch"><div class="ct">유입 채널별 인원 (팀무 전체)</div><div class="csm">누적</div></div>
+    <div class="cb-rows">
+      <div class="cr"><span class="cr-l" style="font-weight:700">네이버 지도 (공무원)</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n" style="font-size:16px;font-weight:900;color:var(--p)">155</span></div>
+      <div class="cr"><span class="cr-l">네이버 블로그 (공무원)</span><div class="cr-bw"><div class="cr-b" style="width:34%"></div></div><span class="cr-n">53</span></div>
+      <div class="cr"><span class="cr-l" style="font-weight:700">친구추천 (체대입시)</span><div class="cr-bw"><div class="cr-b" style="width:31%"></div></div><span class="cr-n" style="font-size:16px;font-weight:900;color:var(--p)">48</span></div>
+      <div class="cr"><span class="cr-l">네이버 지도 (체대입시)</span><div class="cr-bw"><div class="cr-b" style="width:16%"></div></div><span class="cr-n">25</span></div>
+      <div class="cr"><span class="cr-l">블로그 (체대입시)</span><div class="cr-bw"><div class="cr-b" style="width:8%"></div></div><span class="cr-n">12</span></div>
+      <div class="cr" style="background:#FFF0ED;border-radius:7px"><span class="cr-l" style="color:#C0392B">전단지 (체대입시)</span><div class="cr-bw"><div class="cr-b" style="width:5%;background:#D63031"></div></div><span class="cr-n" style="color:#D63031">8</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">유입 채널별 인원 (리드체인지)</div><div class="csm">누적</div></div>
+    <div class="cb-rows">
+      <div class="cr"><span class="cr-l" style="font-weight:700">블로그</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n" style="font-size:16px;font-weight:900;color:var(--p)">59</span></div>
+      <div class="cr"><span class="cr-l" style="font-weight:700">지인 추천</span><div class="cr-bw"><div class="cr-b" style="width:78%"></div></div><span class="cr-n" style="font-size:16px;font-weight:900;color:var(--p)">46</span></div>
+      <div class="cr"><span class="cr-l">선생님 추천</span><div class="cr-bw"><div class="cr-b" style="width:47%"></div></div><span class="cr-n">28</span></div>
+      <div class="cr"><span class="cr-l">네이버 지도</span><div class="cr-bw"><div class="cr-b" style="width:25%"></div></div><span class="cr-n">15</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 전단지 비용 효율 -->
+<div class="card mb16">
+  <div class="ch"><div class="ct">전단지 비용 효율 분석</div><div class="badge b-red">비효율 경고</div></div>
+  <table class="tbl">
+    <tr><th>캠퍼스</th><th class="r">배포 횟수</th><th class="r">학교 수</th><th class="r">총비용</th><th class="r">유입 인원</th><th class="r">1인당 획득비용</th></tr>
+    <tr><td>팀무광진</td><td class="r">47회</td><td class="r">9개교</td><td class="r">8,962,892원</td><td class="r">약 5명</td><td class="r" style="font-weight:900;color:#D63031">약 1,793,000원</td></tr>
+    <tr><td>팀무강동</td><td class="r">44회</td><td class="r">10개교</td><td class="r">10,819,380원</td><td class="r">약 3명</td><td class="r" style="font-weight:900;color:#D63031">약 3,606,000원</td></tr>
+    <tr class="tf"><td>합계</td><td class="r">91회</td><td class="r">19개교</td><td class="r">19,782,272원</td><td class="r">약 8명</td><td class="r" style="color:#D63031;font-weight:900;font-size:14px">약 2,473,000원</td></tr>
+  </table>
+  <div style="padding:8px 11px;font-size:11px;color:#C0392B;background:#FFF0ED;border-radius:0 0 8px 8px;margin:-1px">
+    ⚠ 블로그 1인당 획득비용 약 0원 vs 전단지 약 247만원 — <b>전단지 예산 50% 절감 후 블로그/네이버 광고 전환 권장</b>
+  </div>
+</div>
+</div>
+
+<!-- 팀무광진 마케팅 -->
+<div id="mkt-gj" style="display:none">
+<div class="g3 mb16">
+  <div class="kc"><div class="kc-top" style="background:#C0392B"></div><div class="kl">블로그 게시글</div><div class="kv" style="color:#C0392B">115건</div><div class="ks" style="color:#C0392B;font-weight:700">⚠ 2024 말 이후 비활성</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">전단지 배포</div><div class="kv">47회</div><div class="ks">9개교 · 비용 896만원</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">주요 유입</div><div class="kv">지도 + 추천</div><div class="ks">공무원→지도 / 입시→추천</div></div>
+</div>
+<div class="g2 mb16">
+  <div class="card">
+    <div class="ch"><div class="ct">블로그 주제별 게시글</div></div>
+    <div class="cb-rows">
+      <div class="cr" onclick="showMktDetail('bg_gj_체대입시')"><span class="cr-l">체대입시</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">69</span></div>
+      <div class="cr" onclick="showMktDetail('bg_gj_경찰')"><span class="cr-l">경찰공무원</span><div class="cr-bw"><div class="cr-b" style="width:20%"></div></div><span class="cr-n">14</span></div>
+      <div class="cr" onclick="showMktDetail('bg_gj_소방')"><span class="cr-l">소방공무원</span><div class="cr-bw"><div class="cr-b" style="width:17%"></div></div><span class="cr-n">12</span></div>
+      <div class="cr" onclick="showMktDetail('bg_gj_교정')"><span class="cr-l">교정직</span><div class="cr-bw"><div class="cr-b" style="width:10%"></div></div><span class="cr-n">7</span></div>
+      <div class="cr"><span class="cr-l">대통령경호처</span><div class="cr-bw"><div class="cr-b" style="width:9%"></div></div><span class="cr-n">6</span></div>
+      <div class="cr"><span class="cr-l">체대편입 / 사관학교</span><div class="cr-bw"><div class="cr-b" style="width:3%"></div></div><span class="cr-n">2</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">전단지 학교별 배포 현황</div></div>
+    <div class="cb-rows">
+      <div class="cr" onclick="showMktDetail('fl_건대부고')"><span class="cr-l">건대부고</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">26</span></div>
+      <div class="cr" onclick="showMktDetail('fl_대원남고')"><span class="cr-l">대원남고</span><div class="cr-bw"><div class="cr-b" style="width:85%"></div></div><span class="cr-n">22</span></div>
+      <div class="cr" onclick="showMktDetail('fl_자양고')"><span class="cr-l">자양고</span><div class="cr-bw"><div class="cr-b" style="width:81%"></div></div><span class="cr-n">21</span></div>
+      <div class="cr" onclick="showMktDetail('fl_대원여고')"><span class="cr-l">대원여고</span><div class="cr-bw"><div class="cr-b" style="width:77%"></div></div><span class="cr-n">20</span></div>
+      <div class="cr" onclick="showMktDetail('fl_성수고')"><span class="cr-l">성수고</span><div class="cr-bw"><div class="cr-b" style="width:73%"></div></div><span class="cr-n">19</span></div>
+      <div class="cr" onclick="showMktDetail('fl_광양고')"><span class="cr-l">광양고</span><div class="cr-bw"><div class="cr-b" style="width:65%"></div></div><span class="cr-n">17</span></div>
+      <div class="cr" onclick="showMktDetail('fl_경일고')"><span class="cr-l">경일고</span><div class="cr-bw"><div class="cr-b" style="width:50%"></div></div><span class="cr-n">13</span></div>
+      <div class="cr" onclick="showMktDetail('fl_광남고')"><span class="cr-l">광남고</span><div class="cr-bw"><div class="cr-b" style="width:46%"></div></div><span class="cr-n">12</span></div>
+    </div>
+  </div>
+</div>
+<div class="card mb16">
+  <div class="ch"><div class="ct">월별 유입 현황 (수업별 × 경로)</div><div class="csm">전월 대비 증감 · 합계 강조</div></div>
+  <div style="overflow-x:auto"><table class="tbl">
+    <tr><th>기간</th><th class="r">공무원/지도</th><th class="r">공무원/블로그</th><th class="r">공무원/추천</th><th class="r">입시/지도</th><th class="r">입시/추천</th><th class="r">입시/전단지</th><th class="r" style="background:var(--pl)">합계</th><th class="r">증감</th></tr>
+    <tr style="background:#F5F3FF"><td style="font-weight:900">2026-02</td><td class="r" style="font-weight:900;color:var(--p)">13명</td><td class="r">0</td><td class="r">2명</td><td class="r">0</td><td class="r">3명</td><td class="r">0</td><td class="r" style="font-weight:900;color:var(--p)">18명</td><td class="r" style="color:var(--p);font-weight:700;font-size:14px">▲9</td></tr>
+    <tr style="background:#F5F3FF"><td style="font-weight:900">2026-01</td><td class="r">7명</td><td class="r">0</td><td class="r">1명</td><td class="r">0</td><td class="r">1명</td><td class="r">0</td><td class="r" style="font-weight:900">9명</td><td class="r" style="color:#D63031;font-weight:700">▼9</td></tr>
+    <tr style="background:#F5F3FF"><td style="font-weight:800">2025-12</td><td class="r" style="font-weight:900">10명</td><td class="r">1명</td><td class="r">1명</td><td class="r">2명</td><td class="r">2명</td><td class="r">2명</td><td class="r" style="font-weight:900;color:var(--p)">18명</td><td class="r" style="color:#D63031;font-weight:700">▼3</td></tr>
+    <tr style="background:#F5F3FF"><td style="font-weight:800">2025-11</td><td class="r" style="font-weight:900;color:var(--p);font-size:14px">19명</td><td class="r">1명</td><td class="r">1명</td><td class="r">0</td><td class="r">0</td><td class="r">0</td><td class="r" style="font-weight:900;color:var(--p)">21명</td><td class="r" style="color:var(--p);font-weight:700">▲11</td></tr>
+    <tr><td>2025-08</td><td class="r">5명</td><td class="r">1명</td><td class="r">0</td><td class="r">1명</td><td class="r">1명</td><td class="r">0</td><td class="r" style="font-weight:900">10명</td><td class="r" style="color:var(--p);font-weight:700">▲1</td></tr>
+    <tr><td>2025-07</td><td class="r">2명</td><td class="r">0</td><td class="r">0</td><td class="r">5명</td><td class="r">2명</td><td class="r">0</td><td class="r" style="font-weight:900">9명</td><td class="r" style="color:#D63031;font-weight:700">▼15</td></tr>
+    <tr><td style="font-weight:800">2025-01</td><td class="r" style="font-weight:900;color:var(--p)">13명</td><td class="r">5명</td><td class="r">0</td><td class="r">4명</td><td class="r">2명</td><td class="r">0</td><td class="r" style="font-weight:900">24명</td><td class="r" style="color:#D63031;font-weight:700">▼5</td></tr>
+    <tr><td>2024-12</td><td class="r" style="font-weight:900;color:var(--p)">13명</td><td class="r">5명</td><td class="r">2명</td><td class="r">2명</td><td class="r">4명</td><td class="r">1명</td><td class="r" style="font-weight:900;color:var(--p)">29명</td><td class="r" style="color:var(--p);font-weight:700">▲9</td></tr>
+    <tr><td>2024-11</td><td class="r">8명</td><td class="r">5명</td><td class="r">3명</td><td class="r">1명</td><td class="r">1명</td><td class="r">0</td><td class="r" style="font-weight:900">20명</td><td class="r" style="color:var(--p);font-weight:700">▲2</td></tr>
+    <tr><td>2024-08</td><td class="r">8명</td><td class="r">3명</td><td class="r">2명</td><td class="r">2명</td><td class="r">0</td><td class="r">2명</td><td class="r" style="font-weight:900">18명</td><td class="r" style="color:#D63031;font-weight:700">▼12</td></tr>
+    <tr><td>2024-04</td><td class="r" style="font-weight:900;color:var(--p)">20명</td><td class="r">5명</td><td class="r">1명</td><td class="r">1명</td><td class="r">3명</td><td class="r">0</td><td class="r" style="font-weight:900">30명</td><td class="r" style="color:#D63031;font-weight:700">▼7</td></tr>
+    <tr><td>2024-03</td><td class="r" style="font-weight:900;color:var(--p)">15명</td><td class="r">9명</td><td class="r">0</td><td class="r">2명</td><td class="r" style="font-weight:900;color:var(--p)">11명</td><td class="r">0</td><td class="r" style="font-weight:900">37명</td><td class="r">-</td></tr>
+  </table></div>
+  <div style="padding:8px 11px;background:#F9FAFB;font-size:10.5px;color:var(--mu);border-radius:0 0 8px 8px">
+    💡 <b>11~12월 시즌 급증</b> (공무원 시험 대비) → 시즌 3개월 전 블로그 집중 포스팅 필요 · 2월 지도 유입 +9 급증은 네이버 리뷰 효과 추정
+  </div>
+</div>
+</div>
+
+<!-- 팀무강동 마케팅 -->
+<div id="mkt-gd" style="display:none">
+<div class="g3 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">블로그 게시글</div><div class="kv txt-p">163건</div><div class="ks">활발 유지 · 체대입시 97건</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">전단지 배포</div><div class="kv">44회</div><div class="ks">10개교 · 비용 1,082만원</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">주요 유입</div><div class="kv">지도 (공무원)</div><div class="ks">체대입시는 추천 위주</div></div>
+</div>
+<div class="g2 mb16">
+  <div class="card">
+    <div class="ch"><div class="ct">블로그 주제별 게시글</div></div>
+    <div class="cb-rows">
+      <div class="cr" onclick="showMktDetail('bg_gd_체대입시')"><span class="cr-l">체대입시</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">97</span></div>
+      <div class="cr" onclick="showMktDetail('bg_gd_경찰')"><span class="cr-l">경찰공무원</span><div class="cr-bw"><div class="cr-b" style="width:22%"></div></div><span class="cr-n">21</span></div>
+      <div class="cr" onclick="showMktDetail('bg_gd_소방')"><span class="cr-l">소방공무원</span><div class="cr-bw"><div class="cr-b" style="width:19%"></div></div><span class="cr-n">18</span></div>
+      <div class="cr"><span class="cr-l">체중입시</span><div class="cr-bw"><div class="cr-b" style="width:9%"></div></div><span class="cr-n">9</span></div>
+      <div class="cr"><span class="cr-l">대통령경호처</span><div class="cr-bw"><div class="cr-b" style="width:7%"></div></div><span class="cr-n">7</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">전단지 학교별 배포 현황</div></div>
+    <div class="cb-rows">
+      <div class="cr" onclick="showMktDetail('fl_영파여고')"><span class="cr-l">영파여고</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">7</span></div>
+      <div class="cr" onclick="showMktDetail('fl_동북고')"><span class="cr-l">동북고</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">7</span></div>
+      <div class="cr" onclick="showMktDetail('fl_둔촌고')"><span class="cr-l">둔촌고</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">7</span></div>
+      <div class="cr" onclick="showMktDetail('fl_보성고')"><span class="cr-l">보성고</span><div class="cr-bw"><div class="cr-b" style="width:100%"></div></div><span class="cr-n">7</span></div>
+      <div class="cr" onclick="showMktDetail('fl_성덕고')"><span class="cr-l">성덕고</span><div class="cr-bw"><div class="cr-b" style="width:71%"></div></div><span class="cr-n">5</span></div>
+      <div class="cr"><span class="cr-l">광문고</span><div class="cr-bw"><div class="cr-b" style="width:43%"></div></div><span class="cr-n">3</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 리드체인지 마케팅 -->
+<div id="mkt-lc" style="display:none">
+<div class="g3 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">블로그 게시글</div><div class="kv txt-p">240건</div><div class="ks">최다 · 가장 활발</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">전체 유입</div><div class="kv">148명</div><div class="ks">블로그 59 / 추천 46 / 선생님 28 / 지도 15</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">핵심 채널</div><div class="kv txt-p">블로그 (40%)</div><div class="ks">음대 60% · 미대 54%가 블로그 유입</div></div>
+</div>
+<div class="card mb16">
+  <div class="ch"><div class="ct">전공별 유입 채널 분석</div></div>
+  <table class="tbl">
+    <tr><th>전공</th><th class="r">블로그</th><th class="r">지인추천</th><th class="r">선생님</th><th class="r">지도</th><th>핵심 채널</th></tr>
+    <tr><td style="color:var(--p);cursor:pointer;text-decoration:underline" onclick="showMktDetail('bg_lc_음대')">음대입시</td><td class="r">30명 (60%)</td><td class="r">12명</td><td class="r">2명</td><td class="r">6명</td><td><span class="badge b-blue">블로그 압도적</span></td></tr>
+    <tr><td style="color:var(--p2);cursor:pointer;text-decoration:underline" onclick="showMktDetail('bg_lc_미대')">미대입시</td><td class="r">15명 (54%)</td><td class="r">6명</td><td class="r">5명</td><td class="r">2명</td><td><span class="badge b-blue">블로그 우세</span></td></tr>
+    <tr><td style="cursor:pointer;text-decoration:underline" onclick="showMktDetail('bg_lc_체대')">체대입시</td><td class="r">8명 (15%)</td><td class="r">21명</td><td class="r">20명</td><td class="r">5명</td><td><span class="badge b-bk">추천+선생님 76%</span></td></tr>
+    <tr><td style="cursor:pointer;text-decoration:underline" onclick="showMktDetail('bg_lc_수능')">문과/수능</td><td class="r">4명 (33%)</td><td class="r">5명</td><td class="r">1명</td><td class="r">2명</td><td><span class="badge" style="background:#F9FAFB;color:var(--mu)">추천 42%</span></td></tr>
+  </table>
+</div>
+<div class="card mb16">
+  <div class="ch"><div class="ct">블로그 주요 주제</div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:5px;padding:4px 0">
+    <span class="badge b-blue">예체능 정시/수능</span>
+    <span class="badge b-blue">합격 수기</span>
+    <span class="badge b-blue">서울대 작곡과</span>
+    <span class="badge b-blue">홍익대 미대</span>
+    <span class="badge b-blue">국민대 체대</span>
+    <span class="badge b-blue">모의고사 등급컷</span>
+    <span class="badge b-blue">커리큘럼 안내</span>
+    <span class="badge b-blue">선화예고</span>
+    <span class="badge b-blue">광진구 입시</span>
+    <span class="badge b-blue">수능 분석</span>
+  </div>
+</div>
+<div class="card">
+  <div class="ch"><div class="ct">월별 전공별 유입 추이</div></div>
+  <div style="overflow-x:auto"><table class="tbl">
+    <tr><th>기간</th><th class="r">음대/블로그</th><th class="r">음대/추천</th><th class="r">체대/블로그</th><th class="r">체대/추천</th><th class="r">미대/블로그</th><th class="r">미대/추천</th></tr>
+    <tr><td>2024-09</td><td class="r">3명</td><td class="r">0</td><td class="r">0</td><td class="r">2명</td><td class="r">1명</td><td class="r">0</td></tr>
+    <tr><td>2024-12</td><td class="r">1명</td><td class="r">2명</td><td class="r">0</td><td class="r">1명</td><td class="r">0</td><td class="r">1명</td></tr>
+    <tr><td>2025-01</td><td class="r">5명</td><td class="r">0</td><td class="r">1명</td><td class="r">0</td><td class="r">1명</td><td class="r">0</td></tr>
+    <tr><td>2025-02</td><td class="r">4명</td><td class="r">2명</td><td class="r">1명</td><td class="r">2명</td><td class="r">0</td><td class="r">1명</td></tr>
+    <tr><td>2025-03</td><td class="r">6명</td><td class="r">2명</td><td class="r">2명</td><td class="r">3명</td><td class="r">2명</td><td class="r">0</td></tr>
+    <tr><td>2025-08</td><td class="r">0</td><td class="r">1명</td><td class="r">0</td><td class="r">3명</td><td class="r">1명</td><td class="r">2명</td></tr>
+    <tr><td>2025-11</td><td class="r">0</td><td class="r">0</td><td class="r">1명</td><td class="r">3명</td><td class="r">2명</td><td class="r">0</td></tr>
+    <tr><td>2026-01</td><td class="r">6명</td><td class="r">1명</td><td class="r">0</td><td class="r">3명</td><td class="r">0</td><td class="r">1명</td></tr>
+    <tr><td>2026-03</td><td class="r">1명</td><td class="r">1명</td><td class="r">0</td><td class="r">2명</td><td class="r">0</td><td class="r">0</td></tr>
+  </table></div>
+</div>
+</div>
+</div><!-- /mkt -->
+
+<!-- ══ AI RECOMMENDATION ══ -->
+<div class="pg" id="pg-ai">
+<div class="stt">AI 마케팅 추천</div>
+<div class="sts">유입 데이터 · 채널 성과 · 비용 분석 기반</div>
+
+<div class="g3 mb16">
+  <div class="kc"><div class="kc-top"></div><div class="kl">블로그 우선순위</div><div class="kv">9 / 10</div><div class="ks">리체 최고 ROI 채널</div></div>
+  <div class="kc"><div class="kc-top"></div><div class="kl">네이버 지도</div><div class="kv txt-p">8 / 10</div><div class="ks">공무원 학생 핵심 경로</div></div>
+  <div class="kc"><div class="kc-top" style="background:#D63031"></div><div class="kl">전단지</div><div class="kv" style="color:#D63031">5 / 10</div><div class="ks">낮은 전환 · 축소 권장</div></div>
+</div>
+
+<div class="card mb12" style="border-left:4px solid #D63031">
+  <div class="ch"><div><div class="ct">1. 광진 블로그 즉시 재개</div><div class="csm">긴급 · 매출 직결</div></div><span class="badge b-red">URGENT</span></div>
+  <div style="font-size:12px;color:#555;line-height:1.9">
+    <b>문제:</b> 광진 블로그가 2024년 말 이후 거의 비활성 (월 0~2건). 강동 163건, 리체 240건과 큰 격차.<br>
+    <b>실행:</b> 즉시 월 8~10건 이상 재개. 체대입시(기존 69건 활용) + 공무원체력 콘텐츠 중심.<br>
+    <b>예상 효과:</b> 강동 데이터 기준, 꾸준한 블로그 시 자연 유입 문의 2~3배 증가.
+  </div>
+</div>
+
+<div class="card mb12" style="border-left:4px solid var(--p)">
+  <div class="ch"><div><div class="ct">2. 네이버 지도/플레이스 최적화</div><div class="csm">전 캠퍼스 · 무비용</div></div><span class="badge b-blue">HIGH</span></div>
+  <div style="font-size:12px;color:#555;line-height:1.9">
+    <b>인사이트:</b> 네이버 지도가 공무원 학생 유입 1위 (약 155명). "강동 경찰 체력학원" 등 지역 검색 핵심.<br>
+    <b>실행:</b> 리뷰 100건+ 확보, 매월 시설 사진 업데이트, 플레이스 소식 주 1회, 키워드 전수 등록.<br>
+    <b>예상 효과:</b> 비용 0원 채널에서 10% 개선만으로 연간 15명+ 추가 등록.
+  </div>
+</div>
+
+<div class="card mb12" style="border-left:4px solid var(--p2)">
+  <div class="ch"><div><div class="ct">3. 추천인 제도 공식화</div><div class="csm">광진+강동 · 고효율</div></div><span class="badge b-blue">MEDIUM</span></div>
+  <div style="font-size:12px;color:#555;line-height:1.9">
+    <b>인사이트:</b> 체대입시 39% 친구추천 + 37% 선생님 추천. 가장 강력한 채널이지만 비체계적 운영 중.<br>
+    <b>실행:</b> 추천비 10~20만원 공식 프로그램, 체육교사 합격 실적 자료집 발송, 졸업생 학부모 앰배서더.<br>
+    <b>예상 효과:</b> 30~50% 추천 증가, 연간 15~25명 추가 등록 (거의 무비용).
+  </div>
+</div>
+
+<div class="card mb12" style="border-left:4px solid var(--p)">
+  <div class="ch"><div><div class="ct">4. 리체 블로그 음대/미대 콘텐츠 배증</div><div class="csm">리체 · 핵심 성장 동력</div></div><span class="badge b-blue">HIGH</span></div>
+  <div style="font-size:12px;color:#555;line-height:1.9">
+    <b>인사이트:</b> 음대생 60%, 미대생 54%가 블로그로 유입. 리체의 핵심 고객 획득 채널.<br>
+    <b>실행:</b> 월 15~20건으로 포스팅 증가, 합격생 인터뷰 시리즈, 유튜브 쇼츠 병행, 선화예고/대원여고 타겟.<br>
+    <b>예상 효과:</b> 50% 포스팅 증가 시 25~30명 추가 등록 (연매출 약 7,000~9,000만원 증가).
+  </div>
+</div>
+
+<div class="card mb12" style="border-left:4px solid #D63031">
+  <div class="ch"><div><div class="ct">5. 전단지 비용 50% 절감</div><div class="csm">광진+강동 · 비효율 채널</div></div><span class="badge b-red">CUT</span></div>
+  <div style="font-size:12px;color:#555;line-height:1.9">
+    <b>문제:</b> 합산 1,978만원 대비 유입 약 8명. 1인당 획득 비용 약 247만원으로 극도로 비효율적.<br>
+    <b>실행:</b> 외주 배포 축소 (학교당 45,000원), 상위 3~4개교만 집중, 절감분을 블로그/네이버 광고로 전환.<br>
+    <b>예상 효과:</b> 전체 마케팅 ROI 3~5배 개선.
+  </div>
+</div>
+
+<div class="card mb12" style="border-left:4px solid #D63031">
+  <div class="ch"><div><div class="ct">6. 강동 매출 회복 집중</div><div class="csm">강동 · 2025 유일한 적자 캠퍼스</div></div><span class="badge b-red">CRITICAL</span></div>
+  <div style="font-size:12px;color:#555;line-height:1.9">
+    <b>문제:</b> 2025년 유일한 적자 (-1,161만원). 손익분기 매출 월 약 1,700만원.<br>
+    <b>실행:</b> 경찰 시험 부트캠프 2개월 과정 개설, 리체 연계 체대생 학습 지원 강화, 비수기 강사비 유동 운영.<br>
+    <b>예상 효과:</b> 5명 추가 × 150만원 × 12개월 = 연 9,000만원 추가 → 흑자 전환.
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><div class="ct">추천 마케팅 예산 배분</div></div>
+  <table class="tbl">
+    <tr><th>채널</th><th class="r">현재 비중</th><th class="r">추천 비중</th><th>사유</th></tr>
+    <tr><td>블로그 콘텐츠</td><td class="r">약 30%</td><td class="r txt-p" style="font-weight:900">50%</td><td>최고 ROI · 등록의 40%+ 기여</td></tr>
+    <tr><td>네이버 지도</td><td class="r">약 5%</td><td class="r txt-p" style="font-weight:900">15%</td><td>무비용 · 리뷰 인센티브</td></tr>
+    <tr><td>추천인 프로그램</td><td class="r">약 10%</td><td class="r txt-p" style="font-weight:900">20%</td><td>기존 입소문 공식화</td></tr>
+    <tr><td>전단지 배포</td><td class="r">약 40%</td><td class="r" style="color:#D63031;font-weight:900">10%</td><td>낮은 전환 · 외주 축소</td></tr>
+    <tr><td>SNS (신규)</td><td class="r">약 0%</td><td class="r" style="color:#A29BFE;font-weight:900">5%</td><td>인스타/유튜브 쇼츠</td></tr>
+  </table>
+</div>
+</div><!-- /ai -->
+
+    </div><!-- /content -->
+
+    <!-- ACTIVITY PANEL -->
+    <div class="act-panel">
+      <div class="act-head"><div class="act-title">빠른 현황</div></div>
+      <div class="act-item">
+        <div class="act-lbl">팀무광진 · 4월</div>
+        <div class="act-num">565만원</div>
+        <div class="act-sub">예상 747만 대비</div>
+        <div class="act-bar"><div class="act-fill" style="width:76%"></div></div>
+        <div class="act-foot"><span style="color:var(--mu)">76% 달성</span><span style="font-weight:700;color:var(--p)">완납 13명</span></div>
+      </div>
+      <div class="act-item">
+        <div class="act-lbl">팀무강동 · 3월</div>
+        <div class="act-num">3,933만원</div>
+        <div class="act-sub">공무원 시즌 완료</div>
+        <div class="act-bar"><div class="act-fill" style="width:100%"></div></div>
+        <div class="act-foot"><span style="color:var(--mu)">100% 달성</span><span style="font-weight:700;color:var(--p)">144명 완납</span></div>
+      </div>
+      <div class="act-item">
+        <div class="act-lbl">리드체인지 · 3월</div>
+        <div class="act-num">2,451만원</div>
+        <div class="act-sub">학원 1,910 + 스카 541</div>
+        <div class="act-bar"><div class="act-fill" style="width:88%"></div></div>
+        <div class="act-foot"><span style="color:var(--mu)">미납 5명</span><span style="font-weight:700;color:var(--p)">국어31 영어27</span></div>
+      </div>
+      <div class="act-item" style="background:#FFF0ED;border-radius:8px;margin:4px">
+        <div class="act-lbl" style="color:#D63031;font-weight:800">⚠ 카드할부 · 긴급</div>
+        <div class="act-num" style="color:#D63031">9,125,841원</div>
+        <div class="act-sub" style="color:#D63031">4월 25일까지 청구</div>
+        <div style="margin-top:5px"><span style="background:#D63031;color:#fff;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700">이번달 만기 · 9건</span></div>
+      </div>
+      <div class="act-item">
+        <div class="act-lbl">1~3월 합산 순수익</div>
+        <div class="act-num txt-p">+2,929만원</div>
+        <div class="act-sub">리체 2,160 · 광진 -924 · 강동 1,695</div>
+      </div>
+    </div>
+
+  </div><!-- /content-wrap -->
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div class="ov" id="ov" onclick="bgClose(event)">
+  <div class="mo">
+    <div class="mo-head"><div class="mo-title" id="m-t">상세보기</div><button class="mo-close" onclick="closeModal()">✕</button></div>
+    <div class="mo-body" id="m-b"></div>
+  </div>
+</div>
+
+<script>
+const PD={
+  2024:{l:["1","2","3","4","5","6","7","8","9","10","11","12"],
+    리체:[12711114,8989161,8964537,11151633,13882014,11424425,15793530,8442991,11838583,12376315,4050490,-2004905],
+    광진:[-6055793,-1013742,-1759213,3781634,-3725098,-3967022,-958311,6136933,1645552,2380830,57602592,-8863080],
+    강동:[-2606449,-584069,235951,4125377,1567263,-1751255,-3248306,7164848,-2008696,-2352056,24845807,-5373901]},
+  2025:{l:["1","2","3","4","5","6","7","8","9","10","11","12"],
+    리체:[4285667,4342640,5688017,6384972,8110963,10104417,9966962,7792153,9647703,11570368,-2965813,2274907],
+    광진:[-4842834,-3782583,-1765850,8881105,-2082486,-5379680,765398,-3673896,1611128,-541576,75831091,-10412367],
+    강동:[-3251601,-4722252,-2739477,11174714,-4610488,-980787,-4767520,-8135068,2363373,91420,6652322,-2688704]},
+  2026:{l:["1","2","3"],
+    리체:[11062682,6669785,3863408],
+    광진:[-6529344,-3436521,721031],
+    강동:[1605280,-2571104,17911654]}
+};
+
+// MODAL DATA
+const MD={
+  gj3:{t:"팀무광진 · 3학년",col:"campus",m:[
+    {n:"곽수민",s:"경일고",g:"3",d:"화·목",f:380000,p:false,lc:false},
+    {n:"김연우",s:"대원여고",g:"3",d:"화·목·금",f:420000,p:true,lc:true},
+    {n:"김주하",s:"건대부고",g:"3",d:"화·목·금",f:420000,p:false,lc:false},
+    {n:"박시은",s:"서울동산고",g:"3",d:"-",f:0,p:false,lc:false},
+    {n:"박우빈",s:"대원고",g:"3",d:"화·목·금",f:420000,p:true,lc:false},
+    {n:"방민영",s:"대원여고",g:"3",d:"화·목·토",f:420000,p:true,lc:true},
+    {n:"손예은",s:"서울동산고",g:"3",d:"-",f:0,p:false,lc:false},
+    {n:"송은서",s:"대원여고",g:"3",d:"화·목·금",f:420000,p:true,lc:false},
+    {n:"안진규",s:"자양고",g:"3",d:"화·목",f:380000,p:true,lc:false},
+    {n:"오정현",s:"서울동산고",g:"3",d:"-",f:0,p:false,lc:false},
+    {n:"윤미주",s:"동대부가람고",g:"3",d:"화·토",f:380000,p:false,lc:false},
+    {n:"정슬기",s:"대원여고",g:"3",d:"화·목·토",f:420000,p:true,lc:true},
+    {n:"최은녕",s:"광양고",g:"3",d:"월·수·금",f:420000,p:true,lc:false},
+    {n:"한건희",s:"서울동산고",g:"3",d:"-",f:0,p:false,lc:false},
+    {n:"황민준",s:"대원고",g:"3",d:"-",f:0,p:false,lc:false}]},
+  gj2:{t:"팀무광진 · 2학년",col:"campus",m:[
+    {n:"김강민",s:"서울동산고",g:"2",d:"수·토",f:320000,p:false,lc:false},
+    {n:"장은채",s:"서울동산고",g:"2",d:"수·토",f:320000,p:true,lc:false},
+    {n:"채현서",s:"서울동산고",g:"2",d:"수·토",f:320000,p:false,lc:false},
+    {n:"조민기",s:"자양고",g:"2",d:"화·목",f:320000,p:true,lc:true},
+    {n:"이창현",s:"자양고",g:"2",d:"화·목",f:320000,p:true,lc:false},
+    {n:"최승연",s:"광양고",g:"2",d:"화·토",f:320000,p:true,lc:true}]},
+  gjNB:{t:"팀무광진 · N수생(본원)",col:"campus",m:[
+    {n:"유용진",s:"자양고",g:"N",d:"월·금",f:320000,p:true,lc:false},
+    {n:"염준서",s:"광남고",g:"N",d:"월",f:210000,p:true,lc:false},
+    {n:"김준우",s:"광양고",g:"N",d:"토",f:280000,p:true,lc:false}]},
+  gjN:{t:"팀무광진 · N수생",col:"campus",m:[{n:"박서준",s:"자양고",g:"N",d:"월",f:340000,p:true,lc:false}]},
+  gjGov:{t:"팀무광진 · 공무원 체력",col:"campus",m:[
+    {n:"김수현",s:"소방",g:"소방",d:"-",f:160000,p:true,lc:false},
+    {n:"이민영",s:"소방",g:"소방",d:"-",f:160000,p:true,lc:false},
+    {n:"미납 1명",s:"소방",g:"소방",d:"-",f:0,p:false,lc:false},
+    {n:"경찰 (미확인)",s:"경찰",g:"경찰",d:"-",f:0,p:false,lc:false}]},
+  gd3:{t:"팀무강동 · 3학년",col:"campus",m:[
+    {n:"김교민",s:"둔촌고",g:"3",d:"화·토",f:380000,p:true,lc:false},
+    {n:"김은빈",s:"영파여고",g:"3",d:"월·수·금",f:435000,p:true,lc:true},
+    {n:"서한희",s:"새음학교",g:"3",d:"월·수·금",f:435000,p:true,lc:false},
+    {n:"이재석",s:"상일미디어고",g:"3",d:"월·화·목",f:420000,p:true,lc:false},
+    {n:"정민서",s:"영파여고",g:"3",d:"월·수·금",f:420000,p:true,lc:true},
+    {n:"한지영",s:"창덕여고",g:"3",d:"월·수·금",f:420000,p:true,lc:false}]},
+  gd1:{t:"팀무강동 · 1학년",col:"campus",m:[{n:"송지우",s:"리라아트고",g:"1",d:"-",f:60000,p:true,lc:true}]},
+  gdEd:{t:"팀무강동 · 체대편입",col:"campus",m:[{n:"박창규",s:"학점은행제",g:"편입2",d:"월·수·금",f:280000,p:true,lc:false}]},
+  gdGov:{t:"팀무강동 · 공무원 체력",col:"campus",m:[
+    {n:"이은수",s:"소방시즌",g:"8회",d:"-",f:224000,p:true,lc:false},
+    {n:"길민범",s:"소방시즌",g:"12회",d:"-",f:364000,p:true,lc:false},
+    {n:"소방 69명 추가완납",s:"",g:"",d:"",f:0,p:true,lc:false},
+    {n:"박현정",s:"경찰시즌",g:"5회",d:"-",f:886000,p:true,lc:false},
+    {n:"경찰 72명 추가완납",s:"",g:"",d:"",f:0,p:true,lc:false}]},
+  lcN:{t:"리드체인지 · N수생",col:"lc",m:[
+    {n:"강주원",s:"서울웹툰애니고",g:"N수생",d:"미대/방송",f:340000,p:false,lc:false,tm:""},
+    {n:"김은우",s:"선화예술고",g:"N수생",d:"음대",f:600000,p:true,lc:false,tm:""},
+    {n:"김민하",s:"도선고",g:"N수생",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"정슬기",s:"대원여고",g:"N수생",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"윤예진",s:"무학여고",g:"N수생",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"홍다정",s:"대원여고",g:"N수생",d:"일반",f:600000,p:false,lc:false,tm:""},
+    {n:"하유겸",s:"대광고",g:"N수생",d:"체대",f:450000,p:true,lc:false,tm:"팀무강동"},
+    {n:"조수혁",s:"대광고",g:"N수생",d:"체대",f:600000,p:true,lc:false,tm:"팀무강동"}]},
+  lc3:{t:"리드체인지 · 3학년",col:"lc",m:[
+    {n:"박우빈",s:"대원고",g:"3",d:"체대",f:600000,p:true,lc:false,tm:"팀무강동"},
+    {n:"방민영",s:"대원여고",g:"3",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"김연우",s:"대원여고",g:"3",d:"체대",f:300000,p:true,lc:false,tm:"팀무광진"},
+    {n:"정슬기",s:"대원여고",g:"3",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"김하진",s:"해성컨벤션고",g:"3",d:"음대",f:600000,p:true,lc:false,tm:""},
+    {n:"심윤희",s:"선화예술고",g:"3",d:"음대",f:340000,p:true,lc:false,tm:""},
+    {n:"정민서",s:"영파여고",g:"3",d:"체대",f:300000,p:true,lc:false,tm:"팀무강동"},
+    {n:"김나영",s:"혜성고",g:"3",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"윤도웅",s:"청량고",g:"3",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"박선진",s:"대원여고",g:"3",d:"일반",f:340000,p:true,lc:false,tm:""},
+    {n:"차지윤",s:"가람고",g:"3",d:"일반",f:340000,p:false,lc:false,tm:""},
+    {n:"박현유",s:"선화예술고",g:"3",d:"음대",f:450000,p:true,lc:false,tm:""},
+    {n:"이재석",s:"상일미디어고",g:"3",d:"체대",f:420000,p:true,lc:false,tm:"팀무강동"},
+    {n:"이륜구",s:"서울웹툰애니고",g:"3",d:"미대",f:170000,p:false,lc:false,tm:""},
+    {n:"윤예송",s:"계원예술고",g:"3",d:"미대",f:340000,p:true,lc:false,tm:""}]},
+  lc2:{t:"리드체인지 · 2학년",col:"lc",m:[
+    {n:"최승연",s:"광양고",g:"2",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"유하연",s:"대원여고",g:"2",d:"일반",f:340000,p:true,lc:false,tm:""},
+    {n:"오시영",s:"선화예술고",g:"2",d:"음대",f:487500,p:true,lc:false,tm:""},
+    {n:"서레아",s:"선화예술고",g:"2",d:"음대",f:600000,p:true,lc:false,tm:""},
+    {n:"김민희",s:"대원여고",g:"2",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"조민기",s:"자양고",g:"2",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"백유민",s:"광남고",g:"2",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"변서현",s:"대원여고",g:"2",d:"일반",f:340000,p:false,lc:false,tm:""},
+    {n:"김내강",s:"대원여고",g:"2",d:"일반",f:340000,p:true,lc:false,tm:""},
+    {n:"김주람",s:"대원여고",g:"2",d:"일반",f:300000,p:true,lc:false,tm:""},
+    {n:"김은빈",s:"영파여고",g:"2",d:"체대",f:600000,p:true,lc:false,tm:"팀무강동"},
+    {n:"이하윤",s:"대원여고",g:"2",d:"일반",f:340000,p:false,lc:false,tm:""},
+    {n:"유은서",s:"동대부가람고",g:"2",d:"일반",f:340000,p:false,lc:false,tm:""}]},
+  lc1:{t:"리드체인지 · 1학년",col:"lc",m:[
+    {n:"송지우",s:"리라아트고",g:"1",d:"음대",f:600000,p:true,lc:false,tm:"팀무강동"},
+    {n:"유혜영",s:"신현고",g:"1",d:"일반",f:300000,p:false,lc:false,tm:""},
+    {n:"박우람",s:"광양고",g:"1",d:"체대",f:320000,p:true,lc:false,tm:""},
+    {n:"이서현",s:"자양고",g:"1",d:"일반",f:320000,p:true,lc:false,tm:""}]},
+  lcType:{t:"리드체인지 · 입시유형별",col:"lc",m:[
+    {n:"음대입시 8명",s:"선화·리라아트·해성컨벤션고",g:"음대입시",d:"-",f:0,p:true,lc:false,tm:""},
+    {n:"미대/방송 6명",s:"계원예술·서울웹툰애니고",g:"미대/예체",d:"-",f:0,p:true,lc:false,tm:""},
+    {n:"체대입시 8명",s:"팀무광진·강동 동시수강",g:"체대입시",d:"-",f:0,p:true,lc:false,tm:"팀무"},
+    {n:"일반수능 18명",s:"대원여고·자양고 등",g:"일반수능",d:"-",f:0,p:true,lc:false,tm:""}]},
+  lcKA:{t:"국어 정규A반 (함동희) — 10명 / 수납 4,520,000원",col:"lc",m:[
+    {n:"강주원",s:"서울웹툰애니고",g:"N",d:"미대",f:340000,p:false,lc:false,tm:""},
+    {n:"김은우",s:"선화예술고",g:"N",d:"음대",f:600000,p:true,lc:false,tm:""},
+    {n:"김민하",s:"도선고",g:"N",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"정슬기",s:"대원여고",g:"N",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"윤예진",s:"무학여고",g:"N",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"홍다정",s:"대원여고",g:"N",d:"일반",f:600000,p:false,lc:false,tm:""},
+    {n:"박선진",s:"대원여고",g:"3",d:"일반",f:340000,p:true,lc:false,tm:""},
+    {n:"방민영",s:"대원여고",g:"3",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"김연우",s:"대원여고",g:"3",d:"체대",f:300000,p:true,lc:false,tm:"팀무광진"},
+    {n:"차지윤",s:"가람고",g:"3",d:"일반",f:340000,p:false,lc:false,tm:""}]},
+  lcKBH:{t:"국어 정규B반 (함동희) — 6명 / 수납 2,780,000원",col:"lc",m:[
+    {n:"김하진",s:"해성컨벤션고",g:"3",d:"음대",f:600000,p:true,lc:false,tm:""},
+    {n:"심윤희",s:"선화예술고",g:"3",d:"음대",f:340000,p:true,lc:false,tm:""},
+    {n:"정민서",s:"영파여고",g:"3",d:"체대",f:300000,p:true,lc:false,tm:"팀무강동"},
+    {n:"김나영",s:"혜성고",g:"3",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"윤도웅",s:"청량고",g:"3",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"유은서",s:"동대부가람고",g:"3",d:"일반",f:340000,p:false,lc:false,tm:""}]},
+  lcKC:{t:"국어 기초C반 (함동희) — 9명 / 수납 4,727,500원",col:"lc",m:[
+    {n:"최승연",s:"광양고",g:"2",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"유하연",s:"대원여고",g:"2",d:"일반",f:340000,p:true,lc:false,tm:""},
+    {n:"오시영",s:"선화예술고",g:"2",d:"음대",f:487500,p:true,lc:false,tm:""},
+    {n:"서레아",s:"선화예술고",g:"2",d:"음대",f:600000,p:true,lc:false,tm:""},
+    {n:"김민희",s:"대원여고",g:"2",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"조민기",s:"자양고",g:"2",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"백유민",s:"광남고",g:"2",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"유혜영",s:"신현고",g:"1",d:"일반",f:300000,p:false,lc:false,tm:""},
+    {n:"송지우",s:"리라아트고",g:"1",d:"음대",f:600000,p:true,lc:false,tm:"팀무강동"}]},
+  lcKS:{t:"국어 정규S반 (김춘태) — 3명 / 수납 1,500,000원",col:"lc",m:[
+    {n:"박현유",s:"선화예술고",g:"3",d:"음대",f:450000,p:true,lc:false,tm:""},
+    {n:"하유겸",s:"대광고",g:"N",d:"체대",f:450000,p:true,lc:false,tm:"팀무강동"},
+    {n:"조수혁",s:"대광고",g:"N",d:"체대",f:600000,p:true,lc:false,tm:"팀무강동"}]},
+  lcKBJ:{t:"국어 정규B반 (정원교) — 3명 / 수납 1,540,000원",col:"lc",m:[
+    {n:"김주하",s:"건대부속고",g:"3",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"박우빈",s:"대원고",g:"3",d:"체대",f:600000,p:true,lc:false,tm:"팀무강동"},
+    {n:"송은서",s:"대원여고",g:"3",d:"일반",f:340000,p:true,lc:false,tm:""}]},
+  lcES:{t:"영어 정규S반 (김하류) — 8명 / 수납 4,650,000원",col:"lc",m:[
+    {n:"김은우",s:"선화예술고",g:"N",d:"음대",f:600000,p:true,lc:false,tm:""},
+    {n:"김민하",s:"도선고",g:"N",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"정슬기",s:"대원여고",g:"N",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"윤예진",s:"무학여고",g:"N",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"방민영",s:"대원여고",g:"3",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"하유겸",s:"대광고",g:"N",d:"체대",f:450000,p:true,lc:false,tm:"팀무강동"},
+    {n:"조수혁",s:"대광고",g:"N",d:"체대",f:600000,p:true,lc:false,tm:"팀무강동"},
+    {n:"윤도웅",s:"청량고",g:"3",d:"일반",f:600000,p:true,lc:false,tm:""}]},
+  lcEH:{t:"영어 기초A반 (김하류) — 10명 / 수납 4,667,500원",col:"lc",m:[
+    {n:"최승연",s:"광양고",g:"2",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"오시영",s:"선화예술고",g:"2",d:"음대",f:487500,p:true,lc:false,tm:""},
+    {n:"서레아",s:"선화예술고",g:"2",d:"음대",f:600000,p:true,lc:false,tm:""},
+    {n:"변서현",s:"대원여고",g:"2",d:"일반",f:340000,p:false,lc:false,tm:""},
+    {n:"김민희",s:"대원여고",g:"2",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"김내강",s:"대원여고",g:"2",d:"일반",f:340000,p:true,lc:false,tm:""},
+    {n:"조민기",s:"자양고",g:"2",d:"체대",f:600000,p:true,lc:false,tm:"팀무광진"},
+    {n:"백유민",s:"광남고",g:"2",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"송지우",s:"리라아트고",g:"1",d:"음대",f:600000,p:true,lc:false,tm:"팀무강동"},
+    {n:"김주람",s:"대원여고",g:"2",d:"일반",f:300000,p:true,lc:false,tm:""}]},
+  lcEPA:{t:"영어 정규A반 (박동근) — 5명 / 수납 2,310,000원",col:"lc",m:[
+    {n:"이륜구",s:"서울웹툰애니고",g:"3",d:"미대",f:170000,p:false,lc:false,tm:""},
+    {n:"김하진",s:"해성컨벤션고",g:"3",d:"음대",f:600000,p:true,lc:false,tm:""},
+    {n:"김나영",s:"혜성고",g:"3",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"김은빈",s:"영파여고",g:"2",d:"체대",f:600000,p:true,lc:false,tm:"팀무강동"},
+    {n:"윤예송",s:"계원예술고",g:"2",d:"미대",f:340000,p:true,lc:false,tm:""}]},
+  lcEPB:{t:"영어 기초B반 (박동근) — 4명 / 수납 1,880,000원",col:"lc",m:[
+    {n:"김주하",s:"건대부속고",g:"3",d:"일반",f:600000,p:true,lc:false,tm:""},
+    {n:"박우빈",s:"대원고",g:"3",d:"체대",f:600000,p:true,lc:false,tm:"팀무강동"},
+    {n:"유진성",s:"대원고",g:"3",d:"일반",f:340000,p:true,lc:false,tm:""},
+    {n:"이하윤",s:"대원여고",g:"2",d:"일반",f:340000,p:false,lc:false,tm:""}]}
+};
+
+// NAVIGATION
+function go(btn,pid,title,sub){
+  document.querySelectorAll(".ni").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  document.querySelectorAll(".pg").forEach(p=>p.classList.remove("on"));
+  document.getElementById("pg-"+pid).classList.add("on");
+  document.getElementById("tb-title").textContent=title;
+  setTimeout(()=>initChart(pid),80);
+}
+
+// MODAL
+function showModal(k){
+  const d=MD[k];if(!d)return;
+  const isCampus=d.col==="campus"; // campus modal shows 납부+리체
+  const isLc=d.col==="lc";         // lc modal shows 납부+연계학원
+  const paid=d.m.filter(x=>x.p&&x.n&&!x.n.includes("명")).length;
+  const unpaid=d.m.filter(x=>!x.p&&x.n&&!x.n.includes("명")).length;
+  const total=d.m.reduce((a,x)=>a+(x.f||0),0);
+  const lcCount=isCampus?d.m.filter(x=>x.lc||false).length:0; // for old style
+  const tmCount=isLc?d.m.filter(x=>x.tm&&x.tm!="").length:0;
+  document.getElementById("m-t").innerHTML=d.t;
+  let h=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <div class="card" style="flex:1;min-width:75px;text-align:center;padding:10px"><div style="font-size:9.5px;color:var(--mu)">전체</div><div style="font-size:20px;font-weight:900;color:var(--p)">${d.m.filter(x=>x.n&&!x.n.includes("명")).length}</div><div style="font-size:9.5px;color:var(--mu)">명</div></div>
+    <div class="card" style="flex:1;min-width:75px;text-align:center;padding:10px"><div style="font-size:9.5px;color:var(--mu)">완납</div><div style="font-size:20px;font-weight:900;color:var(--p)">${paid}</div></div>
+    <div class="card" style="flex:1;min-width:75px;text-align:center;padding:10px"><div style="font-size:9.5px;color:var(--mu)">미납</div><div style="font-size:20px;font-weight:900;color:var(--p2)">${unpaid}</div></div>
+    <div class="card" style="flex:2;min-width:120px;text-align:center;padding:10px"><div style="font-size:9.5px;color:var(--mu)">수납합계</div><div style="font-size:13px;font-weight:900;color:var(--p)">${total.toLocaleString()}원</div></div>`;
+  if(isCampus){
+    const realLcCount=d.m.filter(x=>x.lc).length;
+    h+=`<div class="card" style="flex:1;min-width:75px;text-align:center;padding:10px;border-top:3px solid var(--p)"><div style="font-size:9.5px;color:var(--mu)">리체수강</div><div style="font-size:20px;font-weight:900;color:var(--p)">${realLcCount}</div></div>`;
+  }
+  if(isLc&&tmCount>0){
+    h+=`<div class="card" style="flex:1;min-width:75px;text-align:center;padding:10px;border-top:3px solid var(--p2)"><div style="font-size:9.5px;color:var(--mu)">팀무수강</div><div style="font-size:20px;font-weight:900;color:var(--p2)">${tmCount}</div></div>`;
+  }
+  h+=`</div>`;
+
+  // Legend
+  if(isCampus){
+    h+=`<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <span class="badge b-paid">완납</span>
+      <span class="badge b-unpaid">미납</span>
+      <span class="badge b-lc">리체 동시수강</span>
+      <span class="badge b-nolc">리체 미수강</span>
+    </div>`;
+  }
+  if(isLc){
+    h+=`<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <span class="badge b-paid">완납</span>
+      <span class="badge b-unpaid">미납</span>
+      <span class="badge b-lc">팀무 연계</span>
+      <span class="badge b-nolc">연계 없음</span>
+    </div>`;
+  }
+
+  h+=`<table class="tbl"><thead><tr><th>이름</th><th>학교</th><th>학년</th><th>입시/수업</th><th class="r">수강료</th><th>납부</th><th>${isCampus?"리체":"팀무연계"}</th></tr></thead><tbody>`;
+  d.m.forEach(m=>{
+    if(!m.n||m.n.includes("명 추가"))return;
+    const paidBadge=m.n.includes("완납")?"":m.p?`<span class="badge b-paid">완납</span>`:`<span class="badge b-unpaid">미납</span>`;
+    let linkBadge="";
+    if(isCampus)linkBadge=m.lc?`<span class="badge b-lc">리체</span>`:`<span class="badge b-nolc">—</span>`;
+    if(isLc)linkBadge=m.tm?`<span class="badge b-lc">${m.tm}</span>`:`<span class="badge b-nolc">—</span>`;
+    h+=`<tr style="cursor:default">
+      <td style="font-weight:700">${m.n}</td>
+      <td style="color:var(--mu)">${m.s||"-"}</td>
+      <td><span style="background:var(--plb);color:var(--p2);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600">${m.g||"-"}</span></td>
+      <td style="font-size:11px;color:var(--mu)">${m.d||"-"}</td>
+      <td class="r" style="font-weight:700">${m.f?m.f.toLocaleString()+"원":"—"}</td>
+      <td>${paidBadge}</td>
+      <td>${linkBadge}</td>
+    </tr>`;
+  });
+  h+=`</tbody></table>`;
+  document.getElementById("m-b").innerHTML=h;
+  document.getElementById("ov").classList.add("on");
+  document.body.style.overflow="hidden";
+}
+function closeModal(){document.getElementById("ov").classList.remove("on");document.body.style.overflow="";}
+function bgClose(e){if(e.target===document.getElementById("ov"))closeModal();}
+
+// CHARTS
+Chart.defaults.font.family='"Noto Sans KR",sans-serif';
+const GG={color:"#EEF3FF"};
+const charts={};
+function mkChart(id,cfg){
+  const el=document.getElementById(id);if(!el)return null;
+  if(charts[id])try{charts[id].destroy();}catch(e){}
+  try{charts[id]=new Chart(el,cfg);return charts[id];}catch(e){console.warn(id,e);return null;}
+}
+
+// HOME - simplified bar chart for one year
+let homeYr=2026;
+function setHomeYr(yr,btn){
+  document.querySelectorAll("#pg-home .ptab").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  homeYr=yr;
+  drawHomeBar();
+}
+function drawHomeBar(){
+  const d=PD[homeYr];if(!d)return;
+  const labs=d.l.map(x=>x+"월");
+  mkChart("home-bar",{type:"bar",data:{labels:labs,datasets:[
+    {label:"리드체인지",data:d.리체,backgroundColor:"rgba(38,125,255,0.85)",borderRadius:4,borderSkipped:false},
+    {label:"팀무광진",data:d.광진,backgroundColor:"rgba(77,98,255,0.7)",borderRadius:4,borderSkipped:false},
+    {label:"팀무강동",data:d.강동,backgroundColor:"rgba(194,227,255,0.9)",borderRadius:4,borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{position:"bottom",labels:{font:{size:10},boxWidth:10,padding:10}},tooltip:{backgroundColor:"#fff",borderColor:"#E0E8F5",borderWidth:1,callbacks:{label:c=>` ${c.dataset.label}: ${Math.round(c.parsed.y/10000)}만원`}}},scales:{x:{grid:GG,stacked:false},y:{grid:GG,ticks:{callback:v=>Math.round(v/10000)+"만"},stacked:false}}}});
+}
+
+// Campus chart - multi year line
+let gjYrs=new Set([2024,2025,2026]);
+let gdYrs=new Set([2024,2025,2026]);
+let lcYrs=new Set([2024,2025,2026]);
+
+function togYr(set,yr,btn,cb){
+  if(set.has(yr)){if(set.size>1)set.delete(yr);}else set.add(yr);
+  btn.classList.toggle("on",set.has(yr));cb();
+}
+function gjTogYr(yr,b){togYr(gjYrs,yr,b,drawGj);}
+function gdTogYr(yr,b){togYr(gdYrs,yr,b,drawGd);}
+function lcTogYr(yr,b){togYr(lcYrs,yr,b,drawLc);}
+
+const yrPalette={2024:{c:"rgba(162,155,254,0.5)",dash:[4,3]},2025:{c:"rgba(108,92,231,0.7)",dash:[2,2]},2026:{c:"rgba(108,92,231,1)",dash:[]}};
+const LABS12=["1","2","3","4","5","6","7","8","9","10","11","12"];
+
+function buildLine(yrs,key){
+  return [...yrs].map(yr=>{
+    const d=PD[yr];if(!d)return null;
+    const p=yrPalette[yr];
+    return {label:`${yr}년`,data:d[key],borderColor:p.c,backgroundColor:`${p.c.replace("0.9","0.08").replace("0.7","0.08").replace("1)","0.08)")}`,tension:.4,pointRadius:yr===Math.max(...yrs)?3:1.5,fill:yr===Math.max(...yrs),borderWidth:yr===Math.max(...yrs)?2.5:1.5,borderDash:p.dash};
+  }).filter(Boolean);
+}
+
+function campusOpts(){
+  return {responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{font:{size:10},boxWidth:10}}},scales:{x:{grid:GG},y:{grid:GG,ticks:{callback:v=>Math.round(v/10000)+"만"}}}};
+}
+
+function drawGj(){mkChart("gj-ch",{type:"line",data:{labels:LABS12,datasets:buildLine(gjYrs,"광진")},options:campusOpts()});}
+function drawGd(){mkChart("gd-ch",{type:"line",data:{labels:LABS12,datasets:buildLine(gdYrs,"강동")},options:campusOpts()});}
+function drawLc(){mkChart("lc-ch",{type:"line",data:{labels:LABS12,datasets:buildLine(lcYrs,"리체")},options:campusOpts()});}
+
+function drawScaPie(){
+  mkChart("sca-pie",{type:"doughnut",data:{labels:["일반 스카","리체연계"],datasets:[{data:[3930000,1480000],backgroundColor:["#A29BFE","#6C5CE7"],borderColor:["#A29BFE","#6C5CE7"],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${(c.parsed/10000).toFixed(0)}만원 (${(c.parsed/5410000*100).toFixed(1)}%)`}}}}}  );
+}
+
+// PROFIT
+let profitYrs=new Set([2024,2025,2026]);
+function profitTogYr(yr,b){togYr(profitYrs,yr,b,drawProfit);}
+
+function drawProfit(){
+  const all=[...profitYrs];
+  const ds=all.map(yr=>{
+    const d=PD[yr];if(!d)return null;
+    const tot=d.l.map((_,i)=>d.리체[i]+d.광진[i]+d.강동[i]);
+    const p=yrPalette[yr];
+    return {label:`${yr}년`,data:tot,borderColor:p.c,backgroundColor:`${p.c.replace(/[\d.]+\)$/,"0.06)")}`,tension:.4,pointRadius:yr===Math.max(...all)?3.5:1.5,fill:yr===Math.max(...all),borderWidth:yr===Math.max(...all)?2.5:1.5,borderDash:p.dash};
+  }).filter(Boolean);
+  mkChart("profit-ch",{type:"line",data:{labels:LABS12,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{position:"bottom",labels:{font:{size:10},boxWidth:10}},tooltip:{backgroundColor:"#fff",borderColor:"#E0E8F5",borderWidth:1,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y?Math.round(c.parsed.y/10000)+"만원":"—"}`}}},scales:{x:{grid:GG},y:{grid:GG,ticks:{callback:v=>Math.round(v/10000)+"만"}}}}});
+}
+
+function setPY(yr,btn){
+  document.querySelectorAll(".ptab").forEach(b=>b.classList.remove("on"));btn.classList.add("on");
+  const d=PD[yr],f=n=>{const s=Math.abs(n).toLocaleString();return n>=0?"+"+s:"-"+s},cl=n=>n>=0?"txt-profit":"txt-loss";
+  const sum=a=>a.reduce((x,y)=>x+y,0);
+  const lS=sum(d.리체),gS=sum(d.광진),dS=sum(d.강동);
+  document.getElementById("pk").innerHTML=`
+    <div class="kc"><div class="kc-top"></div><div class="kl">리드체인지 연간</div><div class="kv ${cl(lS)}">${f(lS)}원</div></div>
+    <div class="kc"><div class="kc-top" style="background:var(--p2)"></div><div class="kl">팀무광진 연간</div><div class="kv ${cl(gS)}">${f(gS)}원</div></div>
+    <div class="kc"><div class="kc-top"></div><div class="kl">팀무강동 연간</div><div class="kv ${cl(dS)}">${f(dS)}원</div></div>`;
+  const tots=d.l.map((_,i)=>d.리체[i]+d.광진[i]+d.강동[i]);
+  let h=`<thead><tr><th>구분</th>${d.l.map(x=>`<th class="r">${x}월</th>`).join("")}<th class="r" style="border-left:2px solid var(--bd)">합계</th></tr></thead><tbody>`;
+  [{k:"리체",l:"리드체인지"},{k:"광진",l:"팀무광진"},{k:"강동",l:"팀무강동"}].forEach(r=>{
+    const a=d[r.k],s=sum(a);
+    h+=`<tr><td><b>${r.l}</b></td>${a.map(v=>`<td class="r ${cl(v)}">${f(v)}</td>`).join("")}<td class="r ${cl(s)}" style="font-weight:800;border-left:2px solid var(--bd)">${f(s)}</td></tr>`;
+  });
+  const ts=sum(tots);
+  h+=`<tr class="tf"><td><b>합계</b></td>${tots.map(v=>`<td class="r ${cl(v)}">${f(v)}</td>`).join("")}<td class="r ${cl(ts)}" style="font-weight:800;border-left:2px solid var(--bd)">${f(ts)}</td></tr></tbody>`;
+  document.getElementById("profit-tbl").innerHTML=h;
+  drawProfit();
+}
+
+const inited=new Set();
+function initChart(pid){
+  if(inited.has(pid)){
+    // re-draw charts that might have sizing issues
+    if(pid==="gj"&&charts["gj-ch"]){}
+    return;
+  }
+  inited.add(pid);
+  if(pid==="home")drawHomeBar();
+  if(pid==="gj")drawGj();
+  if(pid==="gd")drawGd();
+  if(pid==="lc"){drawLc();setTimeout(drawScaPie,50);setTimeout(drawLcPies,100);}
+  if(pid==="profit")setPY(2026,document.querySelector(".ptab.on"));
+}
+// LC TYPE PIES
+function drawLcPies(){
+  mkChart("lc-type-pie",{type:"doughnut",data:{labels:["국어+영어+관리","국어+영어","국어+관리","영어+관리","국어만","영어만","관리만"],datasets:[{data:[18,7,6,4,3,1,1],backgroundColor:["#4A00E0","#6C5CE7","#A29BFE","#DDD6FE","#E5E7EB","#F3F4F6","#FDE8E8"],borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,cutout:"55%",plugins:{legend:{display:false}}}});
+  mkChart("lc-mgmt-pie",{type:"doughnut",data:{labels:["생활관리 O","생활관리 X"],datasets:[{data:[28,12],backgroundColor:["#4A00E0","#E5E7EB"],borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,cutout:"55%",plugins:{legend:{display:false}}}});
+}
+
+// LC ENROLLMENT MODAL DATA
+MKD.lc_kor_eng_mgmt={t:"국어 + 영어 + 생활관리 (18명)",rows:[
+  {d:"풀패키지",title:"김서연 (휘경여고 3학년) · 정원교T 국어 / 박동근T 영어 · 이유정T 관리"},
+  {d:"풀패키지",title:"우지원 (배재고 2학년) · 이충환T 국어 / 김하류T 영어 · 이유정T 관리"},
+  {d:"풀패키지",title:"이현준 (잠실고 3학년) · 이충환T 국어 · 체대입시"},
+  {d:"풀패키지",title:"나예준 (광양고 2학년) · 정원교T 국어 / 박동근T 영어 · 민서인T 관리"},
+  {d:"풀패키지",title:"이다영 (동산고 2학년) · 정원교T 국어 · 김동은T 관리"},
+  {d:"풀패키지",title:"김민주 (영파여고 2학년) · 정원교T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"류승한 (건대부고 2학년) · 정원교T 국어 · 민서인T 관리"},
+  {d:"풀패키지",title:"함준서 (대원고 2학년) · 이충환T 국어 / 김하류T 영어 · 박지원T 관리"},
+  {d:"풀패키지",title:"유용진 (자양고 2학년) · 이충환T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"권은주 (광남고 2학년) · 정원교T 국어 / 김하류T 영어 · 공지민T 관리"},
+  {d:"풀패키지",title:"이준혁 (광양고 2학년) · 이충환T 국어 / 김하류T 영어 · 박지원T 관리"},
+  {d:"풀패키지",title:"김범수 (대원고 3학년) · 이충환T 국어 / 김하류T 영어 · 박지원T 관리"},
+  {d:"풀패키지",title:"이지안 (휘경여고 3학년) · 이충환T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"김태림 (건대부고 3학년) · 정원교T 국어 / 김하류T 영어 · 박예은T 관리"},
+  {d:"풀패키지",title:"이다영 (동산고 3학년) · 박예은T 관리"},
+  {d:"풀패키지",title:"정유찬 (대원고 3학년) · 이충환T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"이재민 (무학여고 N수) · 정원교T 국어 / 김하류T 영어 · 박수연T 관리"},
+  {d:"풀패키지",title:"한지유 (진관고 N수) · 정원교T 국어 / 박동근T 영어"}]};
+MKD.lc_kor_eng={t:"국어 + 영어 (7명)",rows:[
+  {d:"두과목",title:"김주완 (잠실고 2학년) · 이충환T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"황다현 (동대부여고 2학년) · 이충환T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"김준우 (광양고 2학년) · 정원교T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"서지아 (선화예고 2학년) · 이충환T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"박흥주 (광양고 3학년) · 정원교T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"원호연 (자양고 3학년) · 정원교T 국어 / 김하류T 영어"},
+  {d:"두과목",title:"홍제휘 (신현고 N수) · 김진홍T 국어 / 박동근T 영어"}]};
+MKD.lc_kor_mgmt={t:"국어 + 생활관리 (6명)",rows:[
+  {d:"국어+관리",title:"김예준 (자양고 1학년) · 이충환T 국어 · 민서인T 관리"},
+  {d:"국어+관리",title:"박민서 (선화예고 2학년) · 이충환T 국어"},
+  {d:"국어+관리",title:"조예진 (덕원예고 3학년) · 이충환T 국어 · 박지원T 관리"},
+  {d:"국어+관리",title:"김준호 (서울사대부고 3학년) · 이충환T 국어 · 박수연T 관리"},
+  {d:"국어+관리",title:"전재형 (선화예고 3학년) · 이충환T 국어 · 김서연T 관리"},
+  {d:"국어+관리",title:"김세헌 (영동고 3학년) · 이충환T 국어 · 박수연T 관리"}]};
+MKD.lc_eng_mgmt={t:"영어 + 생활관리 (4명)",rows:[
+  {d:"영어+관리",title:"오시영 (선화예고 1학년) · 김하류T 영어 · 박수연T 관리"},
+  {d:"영어+관리",title:"한수민 (선화예고 3학년) · 김하류T 영어 · 박예은T 관리"},
+  {d:"영어+관리",title:"박수린 (한국삼육고 2학년) · 김하류T 영어 · 박수연T 관리"},
+  {d:"영어+관리",title:"윤도웅 (청량고 2학년) · 김하류T 영어 · 박지원T 관리"}]};
+
+MKD.lc_kor_only={t:"국어만 수강 (3명)",rows:[
+  {d:"국어만",title:"안지민 (자양고 1학년) · 정원교T 국어 · 미대입시"},
+  {d:"국어만",title:"김보민 (동대부여고 2학년) · 정원교T 국어 · 미대입시"},
+  {d:"국어만",title:"박주희 (배화여고 2학년) · 정원교T 국어 · 미대입시"}]};
+MKD.lc_eng_only={t:"영어만 수강 (1명)",rows:[
+  {d:"영어만",title:"안시연 (선화예고 2학년) · 김하류T 영어 · 음대입시"}]};
+MKD.lc_mgmt_only={t:"생활관리만 (1명)",rows:[
+  {d:"관리만",title:"민서준 (대원고 3학년) · 체대입시 · 수업 없이 관리만 진행"}]};
+
+// MARKETING TAB SWITCH
+function swMkt(t,btn){
+  ['all','gj','gd','lc'].forEach(x=>{const el=document.getElementById('mkt-'+x);if(el)el.style.display=x===t?'block':'none';});
+  document.querySelectorAll('#mkt-tabs .ptab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// MARKETING DETAIL MODAL DATA
+const MKD={
+  // 전단지 학교별 상세
+  fl_건대부고:{t:"건대부고 전단지 배포 내역",rows:[
+    {d:"2024-12-30",c:"광진",n:10,cost:"470,000원"},
+    {d:"2025-03-04",c:"광진",n:3,cost:"150,000원"},
+    {d:"2025-08-22",c:"광진",n:5,cost:"250,000원"},
+    {d:"2025-09-11",c:"광진",n:2,cost:"90,000원"},
+    {d:"2025-10-30",c:"광진",n:2,cost:"100,000원"},
+    {d:"2025-12-04",c:"광진",n:2,cost:"100,000원"},
+    {d:"2026-03-04",c:"광진",n:4,cost:"200,000원"},
+    {d:"2026-03-13",c:"광진",n:7,cost:"500,000원"}]},
+  fl_대원남고:{t:"대원남고 전단지 배포 내역",rows:[
+    {d:"2025-03-25",c:"광진",n:3,cost:"190,000원"},
+    {d:"2025-09-10",c:"광진",n:1,cost:"50,000원"}]},
+  fl_자양고:{t:"자양고 전단지 배포 내역",rows:[
+    {d:"2025-03-24",c:"광진",n:3,cost:"150,000원"},
+    {d:"2025-10-28",c:"광진",n:2,cost:"100,000원"}]},
+  fl_대원여고:{t:"대원여고 전단지 배포 내역",rows:[
+    {d:"2025-04-04",c:"광진",n:4,cost:"210,000원"},
+    {d:"2025-06-05",c:"광진",n:3,cost:"150,000원"}]},
+  fl_성수고:{t:"성수고 전단지 배포 내역",rows:[
+    {d:"2025-06-04",c:"광진",n:4,cost:"180,000원"},
+    {d:"2025-07-02",c:"광진",n:8,cost:"400,000원"},
+    {d:"2025-10-31",c:"광진",n:4,cost:"200,000원"},
+    {d:"2025-12-23",c:"광진",n:6,cost:"300,000원"}]},
+  fl_광양고:{t:"광양고 전단지 배포 내역",rows:[
+    {d:"2025-03-05",c:"광진",n:3,cost:"170,000원"},
+    {d:"2025-04-01",c:"광진",n:1,cost:"100,000원"},
+    {d:"2025-09-09",c:"광진",n:3,cost:"150,000원"}]},
+  fl_경일고:{t:"경일고 전단지 배포 내역",rows:[
+    {d:"2025-12-02",c:"광진",n:3,cost:"150,000원"}]},
+  fl_광남고:{t:"광남고 전단지 배포 내역",rows:[
+    {d:"2024-12-27",c:"광진",n:3,cost:"250,000원"}]},
+  fl_영파여고:{t:"영파여고 전단지 배포 내역",rows:[
+    {d:"2024-12-24",c:"강동",n:1,cost:"50,000원"},
+    {d:"2025-02-23",c:"강동",n:1,cost:"0원"},
+    {d:"2025-04-05",c:"강동",n:1,cost:"10,000원"}]},
+  fl_동북고:{t:"동북고 전단지 배포 내역",rows:[
+    {d:"2024-12-27",c:"강동",n:2,cost:"250,000원"},
+    {d:"2025-03-25",c:"강동",n:6,cost:"190,000원"},
+    {d:"2025-04-02",c:"강동",n:1,cost:"10,000원"}]},
+  fl_둔촌고:{t:"둔촌고 전단지 배포 내역",rows:[
+    {d:"2025-04-06",c:"강동",n:1,cost:"10,000원"},
+    {d:"2025-08-27",c:"강동",n:5,cost:"250,000원"}]},
+  fl_보성고:{t:"보성고 전단지 배포 내역",rows:[
+    {d:"2024-12-31",c:"강동",n:7,cost:"320,000원"},
+    {d:"2025-04-01",c:"강동",n:1,cost:"100,000원"},
+    {d:"2025-12-08",c:"강동",n:4,cost:"200,000원"},
+    {d:"2026-03-12",c:"강동",n:4,cost:"200,000원"}]},
+  fl_성덕고:{t:"성덕고 전단지 배포 내역",rows:[
+    {d:"2025-04-04",c:"강동",n:1,cost:"210,000원"},
+    {d:"2025-12-16",c:"강동",n:3,cost:"190,000원"}]},
+
+  // 블로그 카테고리별 상세 (광진)
+  bg_gj_체대입시:{t:"팀무광진 블로그 · 체대입시 (69건)",rows:[
+    {d:"2026-04-12",title:"서울대 체육교육과 2027 정시 계획안 완전 분석"},
+    {d:"2026-03-16",title:"중앙대 스포츠과학부 2027 정시 전형계획 분석 & 입시 전략"},
+    {d:"2026-01-26",title:"단국대 스포츠경영학과 2026 정시 입시요강"},
+    {d:"2025-12-29",title:"성균관대 스포츠과학부 2026 정시 입시요강 총정리"},
+    {d:"2025-12-21",title:"한림대 체육학과 2026 정시 입시요강 총정리"},
+    {d:"2025-12-14",title:"체대입시, 언제부터 시작해야 할까?"},
+    {d:"2025-11-20",title:"체육중점 송곡고등학교 입시 준비 방법"},
+    {d:"2025-11-13",title:"팀무브먼트 광진캠퍼스 2026 정시 시즌 수업 안내"},
+    {d:"2025-10-30",title:"올바른 체대입시 학원 선택의 기준"},
+    {d:"2025-09-18",title:"중앙대 스포츠과학부 정시 입시요강 정리"},
+    {d:"2025-09-20",title:"팀무브먼트 광진캠퍼스 야외육상훈련 수업스케치"}]},
+  bg_gj_경찰:{t:"팀무광진 블로그 · 경찰공무원 (14건)",rows:[
+    {d:"2025-07-15",title:"경찰공무원 체력시험 합격 기준과 준비 방법"},
+    {d:"2025-07-08",title:"경찰 순환식체력시험 종목별 공략법"},
+    {d:"2025-05-20",title:"광진구 경찰체력학원 훈련 스케치"}]},
+  bg_gj_소방:{t:"팀무광진 블로그 · 소방공무원 (12건)",rows:[
+    {d:"2026-03-06",title:"팀무브먼트 2026년 소방체력 특강반 안내"},
+    {d:"2026-01-25",title:"소방공무원 체력학원 팀무브먼트"},
+    {d:"2025-09-07",title:"2026년도 소방공무원 체력 실기 준비, 언제부터?"}]},
+  bg_gj_교정:{t:"팀무광진 블로그 · 교정직 (7건)",rows:[
+    {d:"2026-04-06",title:"2026 교정직 공무원 체력 시험 대비 방법"}]},
+
+  // 블로그 카테고리별 상세 (강동)
+  bg_gd_체대입시:{t:"팀무강동 블로그 · 체대입시 (97건)",rows:[
+    {d:"2026-03-30",title:"2026학년도 한체대·중앙대·단국대 체대 3관왕 합격수기"},
+    {d:"2026-03-22",title:"동국대 체육교육과 2027 정시 모집요강"},
+    {d:"2026-03-22",title:"메디신 볼 던지기 훈련 방법 & 만점 팁"},
+    {d:"2026-03-02",title:"체대입시 실기학원, 팀무브먼트 강동캠퍼스"},
+    {d:"2026-03-02",title:"꼼꼼한 관리형 체대입시학원, 팀무브먼트 강동캠퍼스"},
+    {d:"2026-03-02",title:"합격의 지름길, 팀무브먼트 체대입시학원 강동캠퍼스"},
+    {d:"2026-02-23",title:"체대입시 제자리 멀리뛰기 잘 하는 방법"},
+    {d:"2026-01-19",title:"단국대 체육교육과 2026 정시 입시요강 & 경쟁률 분석"}]},
+  bg_gd_경찰:{t:"팀무강동 블로그 · 경찰공무원 (21건)",rows:[
+    {d:"2026-03-13",title:"2026 경찰 순환식체력시험 단기특강 OPEN"},
+    {d:"2026-02-15",title:"2026 경찰공무원 순환식 체력시험 대비 방법"},
+    {d:"2026-02-08",title:"2026 경찰 체력시험 개편, 변경 기준에 따른 전략"}]},
+  bg_gd_소방:{t:"팀무강동 블로그 · 소방공무원 (18건)",rows:[
+    {d:"2026-03-06",title:"2026년 소방공무원 체력 시험 대비 단기특강반 OPEN"},
+    {d:"2026-01-25",title:"2026 소방공무원 체력시험 대비는 팀무브먼트"}]},
+
+  // 리체 전공별 블로그 상세
+  bg_lc_음대:{t:"리드체인지 블로그 · 음대입시",rows:[
+    {d:"2026-03-18",title:"이화여대 건반악기과 2027 정시 모집요강"},
+    {d:"2026-03-14",title:"한양대 작곡과 2027 정시 입시요강"},
+    {d:"2026-03-10",title:"연세대 성악과 2027 정시 모집요강"},
+    {d:"2026-02-22",title:"국민대 성악과 합격 축하"},
+    {d:"2026-02-15",title:"한예종 성악과 합격 축하"},
+    {d:"2026-02-11",title:"이화여대 작곡과 합격 수기"},
+    {d:"2025-12-16",title:"서울대 작곡과 합격 특별 인터뷰"},
+    {d:"2025-03-15",title:"선화예고 음대 입시 전략 총정리"}]},
+  bg_lc_미대:{t:"리드체인지 블로그 · 미대입시",rows:[
+    {d:"2026-04-11",title:"고려대 디자인조형학부 2027 정시 입시요강"},
+    {d:"2026-03-31",title:"중앙대 미술대학 2027 정시 요강"},
+    {d:"2026-03-23",title:"서울대 미술대학 서양화과 2027 정시 입시요강"},
+    {d:"2026-03-21",title:"홍익대 디자인학부 2027 정시 입시요강"},
+    {d:"2026-03-14",title:"건국대 커뮤니케이션디자인학과 2027 모집요강"},
+    {d:"2026-03-09",title:"국민대 미대 2027 정시 입시요강"},
+    {d:"2026-03-04",title:"세종대 회화과 합격 축하"},
+    {d:"2026-02-15",title:"이화여대 조형예술학부 동양화전공 합격 축하"}]},
+  bg_lc_체대:{t:"리드체인지 블로그 · 체대입시",rows:[
+    {d:"2026-03-22",title:"한국체육대학교 사회체육학과 2027 정시 입시요강"},
+    {d:"2026-03-15",title:"과기대 스포츠과학과 2027 정시 모집요강"},
+    {d:"2026-03-09",title:"주요 대학 입시요강 팩트체크: 실기만큼 수능 챙겨야"},
+    {d:"2026-03-03",title:"고3 새학기, 2027 정시 어떻게 준비해야 할까?"}]},
+  bg_lc_수능:{t:"리드체인지 블로그 · 수능/일반",rows:[
+    {d:"2026-03-30",title:"수능 국어·영어 4월 정시대비반 OPEN"},
+    {d:"2026-03-24",title:"고2 3월 모의고사 등급컷, 2028 수능 대비법"},
+    {d:"2026-03-24",title:"고3 3월 모의고사 등급컷, 2027 수능 커리큘럼"},
+    {d:"2026-03-22",title:"미대·음대·체대 정시 골든타임, 고1 수능 준비"},
+    {d:"2026-03-09",title:"수능 국어·영어 3월 정시대비반 OPEN"},
+    {d:"2026-03-07",title:"N수생 수능 영어 점수 하락 대비법"},
+    {d:"2026-02-25",title:"예체능 국어·영어 학원 선택 기준"},
+    {d:"2026-02-21",title:"고3 남은 한 달, 모의고사 성적 올리는 방법"},
+    {d:"2026-02-18",title:"예비 고1·고2 국어·영어 시작해야 하는 이유"},
+    {d:"2026-02-18",title:"예체능 재수 성공의 차이, 1:1 생활관리상담"},
+    {d:"2026-02-09",title:"실기만 하다 놓치기 쉬운 고2 예체능 수능 영어 전략"},
+    {d:"2026-02-04",title:"입시의 성패를 가르는 2월, '학습 루틴'이 합격을 만듭니다"}]}
+};
+
+function showMktDetail(key){
+  const d=MKD[key];if(!d)return;
+  const isFlyer=key.startsWith('fl_');
+  let h='<div style="font-size:14px;font-weight:800;margin-bottom:12px;color:var(--bk)">'+d.t+'</div>';
+  h+='<table class="tbl"><tr>';
+  if(isFlyer){
+    h+='<th>배포 날짜</th><th>캠퍼스</th><th class="r">횟수</th><th class="r">비용</th></tr>';
+    let totalN=0;
+    d.rows.forEach(r=>{
+      totalN+=r.n;
+      h+='<tr><td>'+r.d+'</td><td>'+r.c+'</td><td class="r" style="font-weight:700;color:var(--p)">'+r.n+'회</td><td class="r">'+r.cost+'</td></tr>';
+    });
+    h+='<tr class="tf"><td colspan="2">합계</td><td class="r">'+totalN+'회</td><td class="r">-</td></tr>';
+  } else {
+    h+='<th>게시 날짜</th><th>제목</th></tr>';
+    d.rows.forEach(r=>{
+      h+='<tr><td style="white-space:nowrap;color:var(--mu)">'+r.d+'</td><td style="white-space:normal;font-weight:500">'+r.title+'</td></tr>';
+    });
+    h+='<tr class="tf"><td colspan="2">총 '+d.rows.length+'건 표시 (전체 목록은 블로그 원본 참조)</td></tr>';
+  }
+  h+='</table>';
+  document.getElementById("m-t").textContent=d.t;
+  document.getElementById("m-b").innerHTML=h;
+  document.getElementById("ov").classList.add("on");
+  document.body.style.overflow="hidden";
+}
+
+// ═══ GOOGLE SHEETS LIVE DATA ═══
+// 구글시트를 "웹에 게시" 후 아래 ID를 입력하면 자동 연동됩니다.
+// 설정법: 구글시트 → 파일 → 공유 → 웹에 게시 → 시트 선택 → CSV 형식 → 게시
+// 그러면 URL이 나옵니다: https://docs.google.com/spreadsheets/d/e/{ID}/pub?gid={GID}&single=true&output=csv
+
+const SHEETS_CONFIG = {
+  // 결산장부 2026 - "학원대시보드" 시트
+  revenue2026: {
+    id: '1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o',
+    gid: '655923385',  // 학원대시보드 시트
+    enabled: false      // true로 바꾸면 활성화
+  },
+  // 결산장부 2025 - "학원대시보드" 시트
+  revenue2025: {
+    id: '1V8wYjLVRCttwIFVpItMBql7QfOEsqwYncMmY_slEzP0',
+    gid: '283708394',
+    enabled: false
+  }
+};
+
+// CSV 파싱 함수
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  return lines.map(line => {
+    const cols = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQuote = !inQuote; }
+      else if (c === ',' && !inQuote) { cols.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    cols.push(cur.trim());
+    return cols;
+  });
+}
+
+// 숫자 정리 (쉼표 제거)
+function cleanNum(s) {
+  if (!s) return 0;
+  const n = Number(s.replace(/[^0-9\-\.]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
+// 구글시트에서 데이터 가져오기
+async function fetchSheetData(config) {
+  if (!config.enabled) return null;
+  const url = `https://docs.google.com/spreadsheets/d/${config.id}/export?format=csv&gid=${config.gid}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+    const text = await res.text();
+    return parseCSV(text);
+  } catch (e) {
+    console.warn('시트 연동 실패:', e.message);
+    return null;
+  }
+}
+
+// 매출/순수익 데이터 업데이트
+async function loadLiveData() {
+  // 2026 데이터 로드
+  const data26 = await fetchSheetData(SHEETS_CONFIG.revenue2026);
+  if (data26) {
+    console.log('✅ 2026 결산장부 실시간 로드 성공 (' + data26.length + '행)');
+    // 데이터 구조에 따라 PD.2026 업데이트
+    // 학원대시보드 시트의 구조: 캠퍼스, 항목, 1월, 2월, 3월...
+    data26.forEach(row => {
+      if (!row[0]) return;
+      const campus = row[0].trim();
+      const item = row[1] ? row[1].trim() : '';
+      if (item === '학원수입' || item === '순수익') {
+        const values = row.slice(2).map(cleanNum);
+        const key = campus.includes('광진') ? '광진' : campus.includes('강동') ? '강동' : campus.includes('리') ? '리체' : null;
+        if (key && item === '순수익') {
+          PD[2026][key] = values.filter(v => v !== 0);
+          if (PD[2026][key].length === 0) PD[2026][key] = values.slice(0, 3);
+        }
+      }
+    });
+    // 차트 재그리기
+    if (inited.has('home')) { inited.delete('home'); initChart('home'); }
+    if (inited.has('profit')) { inited.delete('profit'); initChart('profit'); }
+  }
+
+  // 2025 데이터도 동일한 방식
+  const data25 = await fetchSheetData(SHEETS_CONFIG.revenue2025);
+  if (data25) {
+    console.log('✅ 2025 결산장부 실시간 로드 성공 (' + data25.length + '행)');
+  }
+
+  // 로드 상태 표시
+  const statusEl = document.getElementById('live-status');
+  if (statusEl) {
+    const anyEnabled = Object.values(SHEETS_CONFIG).some(c => c.enabled);
+    if (anyEnabled) {
+      statusEl.textContent = '🟢 실시간 연동 중';
+      statusEl.style.color = '#00B894';
+    }
+  }
+}
+
+window.onload=()=>{
+  initChart("home");
+  // 구글시트 실시간 데이터 로드 (enabled 된 것만)
+  loadLiveData();
+};
+</script>
+</body>
+</html>
