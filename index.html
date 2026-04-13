@@ -231,7 +231,7 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
   <button class="ni" id="ni-gj" onclick="go(this,'gj','팀무광진','2026-04 현황')"><span class="ni-ic">◈</span>팀무광진<span class="ni-bd">25</span></button>
   <button class="ni" id="ni-gd" onclick="go(this,'gd','팀무강동','2026-03 현황')"><span class="ni-ic">◈</span>팀무강동<span class="ni-bd">144</span></button>
   <button class="ni" id="ni-lc" onclick="go(this,'lc','리드체인지','2026-04 현황')"><span class="ni-ic">◈</span>리드체인지<span class="ni-bd">40</span></button>
-  <button class="ni" id="ni-consult" onclick="go(this,'consult','상담 현황','실시간');loadConsult()"><span class="ni-ic">☎</span>상담 현황<span class="ni-bd" id="consult-badge">-</span></button>
+  <button class="ni" id="ni-consult" onclick="go(this,'consult','상담 현황','실시간');consultLoaded=false;loadConsult()"><span class="ni-ic">☎</span>상담 현황<span class="ni-bd" id="consult-badge">-</span></button>
   <div class="sb-sec">결산</div>
   <button class="ni" id="ni-profit" onclick="go(this,'profit','순수익 현황','2024~2026 비교')"><span class="ni-ic">↑</span>순수익 현황</button>
   <button class="ni" id="ni-expense" onclick="go(this,'expense','지출 내역','전월 대비')"><span class="ni-ic">≡</span>지출 내역</button>
@@ -1797,10 +1797,13 @@ async function loadConsult() {
   const el = document.getElementById('cs-tbody');
   if(el) el.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--mu)">⏳ 구글시트에서 데이터 로딩 중...</td></tr>';
 
-  for (const url of CONSULT_URLS) {
+  for (let url of CONSULT_URLS) {
     try {
+      // 캐시 방지
+      const sep = url.includes('?') ? '&' : '?';
+      const fetchUrl = url + sep + '_t=' + Date.now();
       console.log('상담 데이터 시도:', url.substring(0,60)+'...');
-      const res = await fetch(url);
+      const res = await fetch(fetchUrl);
       if (!res.ok) { console.warn('HTTP', res.status); continue; }
       const text = await res.text();
       if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) { console.warn('HTML 반환됨, 다음 URL 시도'); continue; }
