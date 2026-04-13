@@ -1784,8 +1784,9 @@ MKD.lc_mgmt_only={t:"생활관리만 (1명)",rows:[
 
 // ═══ CONSULTATION LIVE DATA ═══
 const CONSULT_URLS = [
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTkhoxBJ9ykp_z2faHs6ezr01w8c7V3SGlJNxgmJShC5W3E0Olld1C7EUej1eFtPBX3bWmPtDw6LvFy/pub?output=csv',
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTkhoxBJ9ykp_z2faHs6ezr01w8c7V3SGlJNxgmJShC5W3E0Olld1C7EUej1eFtPBX3bWmPtDw6LvFy/pub?gid=0&single=true&output=csv'
+  'https://docs.google.com/spreadsheets/d/1fsfglBPzv7FEPhtEyRbLpAkBGPUpeWyVjb8kldkvjY0/gviz/tq?tqx=out:csv',
+  'https://docs.google.com/spreadsheets/d/1fsfglBPzv7FEPhtEyRbLpAkBGPUpeWyVjb8kldkvjY0/export?format=csv&gid=0',
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTkhoxBJ9ykp_z2faHs6ezr01w8c7V3SGlJNxgmJShC5W3E0Olld1C7EUej1eFtPBX3bWmPtDw6LvFy/pub?output=csv'
 ];
 let consultData = [];
 let consultFilter = 'all';
@@ -1805,11 +1806,12 @@ async function loadConsult() {
       if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) { console.warn('HTML 반환됨, 다음 URL 시도'); continue; }
       const rows = parseCSV(text);
       if (rows.length < 2) { console.warn('행 부족:', rows.length); continue; }
+      const q=s=>(s||'').replace(/^"|"$/g,'').trim();
       consultData = rows.slice(1).filter(r => r[0] && r[0].trim()).map(r => ({
-        date: r[0]||'', name: r[1]||'', phone: r[2]||'',
-        campus: r[3]||'', type: r[4]||'', wishDate: r[5]||'',
-        time: r[6]||'', source: r[7]||'', status: r[8]||'',
-        visited: (r[9]||'').toUpperCase()==='TRUE', result: r[10]||''
+        date: q(r[0]), name: q(r[1]), phone: q(r[2]),
+        campus: q(r[3]), type: q(r[4]), wishDate: q(r[5]),
+        time: q(r[6]), source: q(r[7]), status: q(r[8]),
+        visited: q(r[9]).toUpperCase()==='TRUE', result: q(r[10])
       }));
       consultData.sort((a,b) => b.date.localeCompare(a.date));
       document.getElementById('consult-badge').textContent = consultData.length;
