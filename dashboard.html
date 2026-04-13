@@ -1855,17 +1855,41 @@ function showMktDetail(key){
 // 그러면 URL이 나옵니다: https://docs.google.com/spreadsheets/d/e/{ID}/pub?gid={GID}&single=true&output=csv
 
 const SHEETS_CONFIG = {
-  // 결산장부 2026 - "학원대시보드" 시트
+  // 결산장부 2026
   revenue2026: {
     id: '1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o',
-    gid: '655923385',  // 학원대시보드 시트
-    enabled: false      // true로 바꾸면 활성화
+    gid: '655923385',
+    enabled: true
   },
-  // 결산장부 2025 - "학원대시보드" 시트
+  // 결산장부 2025
   revenue2025: {
     id: '1V8wYjLVRCttwIFVpItMBql7QfOEsqwYncMmY_slEzP0',
     gid: '283708394',
-    enabled: false
+    enabled: true
+  },
+  // 마케팅 유입 데이터
+  marketing: {
+    id: '1n25NOm93a2opYb-95Y6vIzwjwOFVdyr5OJvJcXo7dLs',
+    gid: '1222979344',
+    enabled: true
+  },
+  // 리체 학생 데이터
+  students: {
+    id: '1H3ttMuGs-kwHoaA6z4ApSo9kvQZPNA0EOu8OnwkI2u8',
+    gid: '1412721832',
+    enabled: true
+  },
+  // 블로그 관리
+  blog: {
+    id: '1zEAVf5-_4Q-sp3tzNC9CbAVuEwfM3tslXmKfx-0KYF0',
+    gid: '157122948',
+    enabled: true
+  },
+  // 전단지 관리
+  flyer: {
+    id: '1lErwpFeyVOwOs_zvpnLJDA3O9A9aNZNHlf8S3K9xQg4',
+    gid: '607717041',
+    enabled: true
   }
 };
 
@@ -1908,47 +1932,101 @@ async function fetchSheetData(config) {
   }
 }
 
-// 매출/순수익 데이터 업데이트
+// 결산장부에서 순수익 행 찾기
+function extractProfit(data, yearKey) {
+  if (!data) return;
+  // 2026 결산장부 CSV 구조: 각 캠퍼스 섹션이 있고 "순수익" 행이 있음
+  // 리드체인지 → 광진캠퍼스 → 강동캠퍼스 순서
+  let currentCampus = null;
+  data.forEach(row => {
+    const r0 = (row[1]||'').trim();
+    const r1 = (row[0]||'').trim();
+    // 캠퍼스 감지
+    if (r1.includes('리드체인지') || r1.includes('리체')) currentCampus = '리체';
+    else if (r1.includes('광진')) currentCampus = '광진';
+    else if (r1.includes('강동')) currentCampus = '강동';
+    // 순수익 행 감지
+    if (r0 === '순수익' && currentCampus) {
+      const vals = [];
+      for (let i = 4; i < row.length; i += 2) {
+        const v = cleanNum(row[i]);
+        if (v !== 0) vals.push(v);
+      }
+      if (vals.length > 0) {
+        PD[yearKey][currentCampus] = vals;
+        console.log(`  → ${currentCampus} 순수익: [${vals.map(v=>(v/10000).toFixed(0)+'만').join(', ')}]`);
+      }
+    }
+  });
+}
+
+// 전체 데이터 로드
 async function loadLiveData() {
-  // 2026 데이터 로드
+  let loadCount = 0;
+  const statusEl = document.getElementById('live-status');
+  if (statusEl) { statusEl.textContent = '⏳ 데이터 로딩 중...'; statusEl.style.color = '#6C5CE7'; }
+
+  // 1. 2026 결산장부
   const data26 = await fetchSheetData(SHEETS_CONFIG.revenue2026);
   if (data26) {
-    console.log('✅ 2026 결산장부 실시간 로드 성공 (' + data26.length + '행)');
-    // 데이터 구조에 따라 PD.2026 업데이트
-    // 학원대시보드 시트의 구조: 캠퍼스, 항목, 1월, 2월, 3월...
-    data26.forEach(row => {
-      if (!row[0]) return;
-      const campus = row[0].trim();
-      const item = row[1] ? row[1].trim() : '';
-      if (item === '학원수입' || item === '순수익') {
-        const values = row.slice(2).map(cleanNum);
-        const key = campus.includes('광진') ? '광진' : campus.includes('강동') ? '강동' : campus.includes('리') ? '리체' : null;
-        if (key && item === '순수익') {
-          PD[2026][key] = values.filter(v => v !== 0);
-          if (PD[2026][key].length === 0) PD[2026][key] = values.slice(0, 3);
-        }
-      }
-    });
-    // 차트 재그리기
+    console.log('✅ 2026 결산장부 로드 (' + data26.length + '행)');
+    extractProfit(data26, 2026);
+    loadCount++;
+  }
+
+  // 2. 2025 결산장부
+  const data25 = await fetchSheetData(SHEETS_CONFIG.revenue2025);
+  if (data25) {
+    console.log('✅ 2025 결산장부 로드 (' + data25.length + '행)');
+    extractProfit(data25, 2025);
+    loadCount++;
+  }
+
+  // 3. 마케팅 유입 데이터
+  const dataMkt = await fetchSheetData(SHEETS_CONFIG.marketing);
+  if (dataMkt) {
+    console.log('✅ 마케팅 유입 데이터 로드 (' + dataMkt.length + '행)');
+    loadCount++;
+  }
+
+  // 4. 리체 학생 데이터
+  const dataStu = await fetchSheetData(SHEETS_CONFIG.students);
+  if (dataStu) {
+    console.log('✅ 리체 학생 데이터 로드 (' + dataStu.length + '행)');
+    loadCount++;
+  }
+
+  // 5. 블로그 데이터
+  const dataBlog = await fetchSheetData(SHEETS_CONFIG.blog);
+  if (dataBlog) {
+    console.log('✅ 블로그 데이터 로드 (' + dataBlog.length + '행)');
+    loadCount++;
+  }
+
+  // 6. 전단지 데이터
+  const dataFlyer = await fetchSheetData(SHEETS_CONFIG.flyer);
+  if (dataFlyer) {
+    console.log('✅ 전단지 데이터 로드 (' + dataFlyer.length + '행)');
+    loadCount++;
+  }
+
+  // 차트 재그리기
+  if (loadCount > 0) {
     if (inited.has('home')) { inited.delete('home'); initChart('home'); }
     if (inited.has('profit')) { inited.delete('profit'); initChart('profit'); }
   }
 
-  // 2025 데이터도 동일한 방식
-  const data25 = await fetchSheetData(SHEETS_CONFIG.revenue2025);
-  if (data25) {
-    console.log('✅ 2025 결산장부 실시간 로드 성공 (' + data25.length + '행)');
-  }
-
-  // 로드 상태 표시
-  const statusEl = document.getElementById('live-status');
+  // 상태 표시
   if (statusEl) {
-    const anyEnabled = Object.values(SHEETS_CONFIG).some(c => c.enabled);
-    if (anyEnabled) {
-      statusEl.textContent = '🟢 실시간 연동 중';
+    if (loadCount > 0) {
+      statusEl.textContent = '🟢 실시간 연동 (' + loadCount + '개 시트)';
       statusEl.style.color = '#00B894';
+    } else {
+      statusEl.textContent = '🔴 연동 실패';
+      statusEl.style.color = '#D63031';
     }
   }
+  console.log(`📊 총 ${loadCount}개 시트 연동 완료`);
 }
 
 window.onload=()=>{
