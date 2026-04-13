@@ -1799,30 +1799,51 @@ async function loadConsult() {
 
   for (let url of CONSULT_URLS) {
     try {
-      // 캐시 방지
       const sep = url.includes('?') ? '&' : '?';
       const fetchUrl = url + sep + '_t=' + Date.now();
-      console.log('상담 데이터 시도:', url.substring(0,60)+'...');
+      console.log('상담 시도:', fetchUrl.substring(0,80));
       const res = await fetch(fetchUrl);
-      if (!res.ok) { console.warn('HTTP', res.status); continue; }
+      console.log('HTTP:', res.status, res.statusText);
+      if (!res.ok) continue;
       const text = await res.text();
-      if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) { console.warn('HTML 반환됨, 다음 URL 시도'); continue; }
-      const rows = parseCSV(text);
-      if (rows.length < 2) { console.warn('행 부족:', rows.length); continue; }
-      const q=s=>(s||'').replace(/^"|"$/g,'').trim();
-      consultData = rows.slice(1).filter(r => r[0] && r[0].trim()).map(r => ({
-        date: q(r[0]), name: q(r[1]), phone: q(r[2]),
-        campus: q(r[3]), type: q(r[4]), wishDate: q(r[5]),
-        time: q(r[6]), source: q(r[7]), status: q(r[8]),
-        visited: q(r[9]).toUpperCase()==='TRUE', result: q(r[10])
+      console.log('응답 길이:', text.length, '첫50자:', text.substring(0,50));
+      if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) { console.warn('HTML 반환'); continue; }
+
+      // CSV 파싱 (따옴표 처리 강화)
+      const lines = text.split('\n').filter(l=>l.trim());
+      console.log('행 수:', lines.length);
+      if (lines.length < 2) continue;
+
+      const parseRow = line => {
+        const cols = [];
+        let cur='', inQ=false;
+        for(let i=0;i<line.length;i++){
+          const c=line[i];
+          if(c==='"'){ inQ=!inQ; continue; }
+          if(c===','&&!inQ){ cols.push(cur.trim()); cur=''; continue; }
+          cur+=c;
+        }
+        cols.push(cur.trim());
+        return cols;
+      };
+
+      const dataRows = lines.slice(1).map(parseRow).filter(r=>r[0]&&r[0].trim());
+      console.log('데이터 행:', dataRows.length, '첫 행:', dataRows[0]);
+      if (dataRows.length === 0) continue;
+
+      consultData = dataRows.map(r => ({
+        date: r[0]||'', name: r[1]||'', phone: r[2]||'',
+        campus: r[3]||'', type: r[4]||'', wishDate: r[5]||'',
+        time: r[6]||'', source: r[7]||'', status: r[8]||'',
+        visited: (r[9]||'').toUpperCase()==='TRUE', result: r[10]||''
       }));
       consultData.sort((a,b) => b.date.localeCompare(a.date));
       document.getElementById('consult-badge').textContent = consultData.length;
       consultLoaded = true;
       renderConsult();
-      console.log('✅ 상담현황 로드 성공 (' + consultData.length + '건)');
+      console.log('✅ 상담현황 성공:', consultData.length+'건');
       return;
-    } catch(e) { console.warn('시도 실패:', e.message); }
+    } catch(e) { console.warn('실패:', e.message, e); }
   }
   if(el) el.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:30px"><div style="color:#D63031;font-weight:700;margin-bottom:8px">데이터 로드 실패</div><div style="font-size:11px;color:var(--mu)">구글시트 → 파일 → 공유 → 웹에 게시 → CSV 형식으로 게시했는지 확인<br>그리고 공유 → 링크가 있는 모든 사용자 → 뷰어로 설정했는지 확인</div></td></tr>';
 }
