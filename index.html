@@ -572,7 +572,7 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
         <div style="flex-shrink:0;width:110px;height:110px;position:relative"><canvas id="sca-pie"></canvas></div>
         <div style="flex:1">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-            <div style="width:10px;height:10px;border-radius:50%;background:var(--p)"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#A29BFE"></div>
             <div>
               <div style="font-size:11px;color:var(--mu)">일반 스카</div>
               <div style="font-size:16px;font-weight:900">3,930,000원</div>
@@ -580,7 +580,7 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:10px;height:10px;border-radius:50%;background:var(--pl)"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#6C5CE7"></div>
             <div>
               <div style="font-size:11px;color:var(--mu)">리체연계 스카</div>
               <div style="font-size:16px;font-weight:900;color:var(--p2)">1,480,000원</div>
@@ -2094,42 +2094,21 @@ function showMktDetail(key){
 // 그러면 URL이 나옵니다: https://docs.google.com/spreadsheets/d/e/{ID}/pub?gid={GID}&single=true&output=csv
 
 const SHEETS_CONFIG = {
-  // 결산장부 2026
-  revenue2026: {
-    id: '1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o',
-    gid: '655923385',
-    enabled: true
-  },
-  // 결산장부 2025
-  revenue2025: {
-    id: '1V8wYjLVRCttwIFVpItMBql7QfOEsqwYncMmY_slEzP0',
-    gid: '283708394',
-    enabled: true
-  },
-  // 마케팅 유입 데이터
-  marketing: {
-    id: '1n25NOm93a2opYb-95Y6vIzwjwOFVdyr5OJvJcXo7dLs',
-    gid: '1222979344',
-    enabled: true
-  },
-  // 리체 학생 데이터
-  students: {
-    id: '1H3ttMuGs-kwHoaA6z4ApSo9kvQZPNA0EOu8OnwkI2u8',
-    gid: '1412721832',
-    enabled: true
-  },
-  // 블로그 관리
-  blog: {
-    id: '1zEAVf5-_4Q-sp3tzNC9CbAVuEwfM3tslXmKfx-0KYF0',
-    gid: '157122948',
-    enabled: true
-  },
-  // 전단지 관리
-  flyer: {
-    id: '1lErwpFeyVOwOs_zvpnLJDA3O9A9aNZNHlf8S3K9xQg4',
-    gid: '607717041',
-    enabled: true
-  }
+  // ═══ 2026 결산장부 D_ 시트들 ═══
+  매출순수익: { id:'1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o', sheet:'D_매출순수익', enabled:true },
+  강사급여: { id:'1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o', sheet:'D_강사급여', enabled:true },
+  개인지출: { id:'1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o', sheet:'D_개인지출', enabled:true },
+  카드할부: { id:'1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o', sheet:'D_카드할부', enabled:true },
+  대출현황: { id:'1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o', sheet:'D_대출현황', enabled:true },
+  카드예상: { id:'1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o', sheet:'D_카드예상지출', enabled:true },
+  // ═══ 운영부 파일 (학생 명단) ═══
+  광진운영: { id:'1vwAZ5jqwTQikCTVmwXKVGSOpcS6MAYR-tKypKwzYdnM', gid:'1585085979', enabled:true },
+  강동운영: { id:'1vVxRIuTARKitueLRilqy1aH2uy_DeBwc0aZ2KNflFTs', gid:'1685009418', enabled:true },
+  리체운영: { id:'1TBBE_rRAko5BnP_UZwMwwfeDHP7t1P9UeX3I4NY5JYA', gid:'103453958', enabled:true },
+  스카운영: { id:'1eGtRsnUXmesETILX3oh9udApCjOY20Tg16kcce5h6qs', gid:'0', enabled:true },
+  // ═══ 기타 ═══
+  마케팅유입: { id:'1n25NOm93a2opYb-95Y6vIzwjwOFVdyr5OJvJcXo7dLs', gid:'1222979344', enabled:true },
+  블로그: { id:'1zEAVf5-_4Q-sp3tzNC9CbAVuEwfM3tslXmKfx-0KYF0', gid:'157122948', enabled:true },
 };
 
 // CSV 파싱 함수
@@ -2158,96 +2137,160 @@ function cleanNum(s) {
 
 // 구글시트에서 데이터 가져오기
 async function fetchSheetData(config) {
-  if (!config.enabled) return null;
-  const url = `https://docs.google.com/spreadsheets/d/${config.id}/export?format=csv&gid=${config.gid}`;
+  if (!config || !config.enabled) return null;
+  // 시트 이름 또는 gid로 URL 생성
+  let url;
+  if (config.sheet) {
+    url = `https://docs.google.com/spreadsheets/d/${config.id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(config.sheet)}&_t=${Date.now()}`;
+  } else {
+    url = `https://docs.google.com/spreadsheets/d/${config.id}/gviz/tq?tqx=out:csv&gid=${config.gid}&_t=${Date.now()}`;
+  }
   try {
     const res = await fetch(url);
-    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
+    if (text.trim().startsWith('<!')) return null; // HTML 반환 = 접근 실패
     return parseCSV(text);
   } catch (e) {
-    console.warn('시트 연동 실패:', e.message);
+    console.warn('시트 연동 실패:', config.sheet||config.gid, e.message);
     return null;
   }
 }
 
-// 결산장부에서 순수익 행 찾기
-function extractProfit(data, yearKey) {
+// ═══ D_매출순수익에서 2026 순수익 업데이트 ═══
+function updateProfitFromD(data) {
   if (!data) return;
-  // 2026 결산장부 CSV 구조: 각 캠퍼스 섹션이 있고 "순수익" 행이 있음
-  // 리드체인지 → 광진캠퍼스 → 강동캠퍼스 순서
-  let currentCampus = null;
+  // D_매출순수익 구조: 캠퍼스 | 항목 | 1월 | 2월 | ... 12월
   data.forEach(row => {
-    const r0 = (row[1]||'').trim();
-    const r1 = (row[0]||'').trim();
-    // 캠퍼스 감지
-    if (r1.includes('리드체인지') || r1.includes('리체')) currentCampus = '리체';
-    else if (r1.includes('광진')) currentCampus = '광진';
-    else if (r1.includes('강동')) currentCampus = '강동';
-    // 순수익 행 감지
-    if (r0 === '순수익' && currentCampus) {
-      const vals = [];
-      for (let i = 4; i < row.length; i += 2) {
-        const v = cleanNum(row[i]);
-        if (v !== 0) vals.push(v);
-      }
-      if (vals.length > 0) {
-        PD[yearKey][currentCampus] = vals;
-        console.log(`  → ${currentCampus} 순수익: [${vals.map(v=>(v/10000).toFixed(0)+'만').join(', ')}]`);
-      }
+    const campus = (row[0]||'').trim();
+    const item = (row[1]||'').trim();
+    if (item !== '순수익') return;
+    const key = campus.includes('리체') ? '리체' : campus.includes('광진') ? '광진' : campus.includes('강동') ? '강동' : null;
+    if (!key) return;
+    const vals = [];
+    for (let m = 2; m < 14; m++) {
+      const v = cleanNum(row[m]);
+      vals.push(v);
+    }
+    // 0이 아닌 값이 있는 달까지만
+    let lastNonZero = 0;
+    for (let i = vals.length-1; i >= 0; i--) { if (vals[i] !== 0) { lastNonZero = i; break; } }
+    const trimmed = vals.slice(0, lastNonZero + 1);
+    if (trimmed.length > 0) {
+      PD[2026][key] = trimmed;
+      PD[2026].l = trimmed.map((_,i) => String(i+1));
+      console.log(`  → ${key} 순수익: [${trimmed.map(v=>(v/10000).toFixed(0)+'만').join(', ')}]`);
     }
   });
 }
 
-// 전체 데이터 로드
+// ═══ 운영부 학생 명단 파싱 ═══
+const LIVE_ROSTER = { gwangjin:[], gangdong:[], riche:[], ska:[] };
+
+function parseGwangjinRoster(data) {
+  if (!data) return;
+  LIVE_ROSTER.gwangjin = [];
+  data.forEach(row => {
+    const status = (row[0]||'').trim();
+    const name = (row[1]||'').trim();
+    const school = (row[2]||'').trim();
+    const grade = (row[3]||'').trim();
+    if (!name || name==='이름' || name.length < 2 || name.length > 5) return;
+    if (!/^[가-힣]+$/.test(name)) return;
+    const riche = (row[6]||'').trim();
+    const amount = cleanNum(row[18]||'0');
+    const payDate = (row[19]||'').trim();
+    LIVE_ROSTER.gwangjin.push({
+      name, school, grade, status,
+      riche: riche==='O',
+      amount, paid: status==='완납',
+      payDate, payMethod: (row[20]||'').trim()
+    });
+  });
+  console.log('광진 학생:', LIVE_ROSTER.gwangjin.length + '명');
+}
+
+function parseGangdongRoster(data) {
+  if (!data) return;
+  // 강동은 광진과 같은 구조지만 첫 시트(기본)에 강사 정보가 있고
+  // 학생 시트는 gid가 다를 수 있음. 일단 같은 파싱 시도
+  LIVE_ROSTER.gangdong = [];
+  data.forEach(row => {
+    const status = (row[0]||'').trim();
+    const name = (row[1]||'').trim();
+    const school = (row[2]||'').trim();
+    const grade = (row[3]||'').trim();
+    if (!name || name==='이름' || name.length < 2 || name.length > 5) return;
+    if (!/^[가-힣]+$/.test(name)) return;
+    const amount = cleanNum(row[18]||'0');
+    LIVE_ROSTER.gangdong.push({
+      name, school, grade, status,
+      amount, paid: status==='완납'
+    });
+  });
+  console.log('강동 학생:', LIVE_ROSTER.gangdong.length + '명');
+}
+
+function parseSkaRoster(data) {
+  if (!data) return;
+  LIVE_ROSTER.ska = [];
+  data.forEach(row => {
+    const type = (row[0]||'').trim(); // 리체/일반
+    const name = (row[1]||'').trim();
+    const service = (row[2]||'').trim();
+    if (!name || name.length < 2 || name.length > 5) return;
+    if (!/^[가-힣]+$/.test(name)) return;
+    const amount = cleanNum(row[9]||'0');
+    const payDate = (row[10]||'').trim();
+    LIVE_ROSTER.ska.push({
+      name, type, service, amount, payDate,
+      isRiche: type==='리체'
+    });
+  });
+  console.log('스카 회원:', LIVE_ROSTER.ska.length + '명');
+}
+
+// ═══ 전체 데이터 로드 ═══
 async function loadLiveData() {
   let loadCount = 0;
   const statusEl = document.getElementById('live-status');
   if (statusEl) { statusEl.textContent = '⏳ 데이터 로딩 중...'; statusEl.style.color = '#6C5CE7'; }
 
-  // 1. 2026 결산장부
-  const data26 = await fetchSheetData(SHEETS_CONFIG.revenue2026);
-  if (data26) {
-    console.log('✅ 2026 결산장부 로드 (' + data26.length + '행)');
-    extractProfit(data26, 2026);
-    loadCount++;
-  }
+  // 1. D_매출순수익 → 2026 순수익 업데이트
+  const d매출 = await fetchSheetData(SHEETS_CONFIG.매출순수익);
+  if (d매출) { updateProfitFromD(d매출); loadCount++; console.log('✅ D_매출순수익 로드'); }
 
-  // 2. 2025 결산장부
-  const data25 = await fetchSheetData(SHEETS_CONFIG.revenue2025);
-  if (data25) {
-    console.log('✅ 2025 결산장부 로드 (' + data25.length + '행)');
-    extractProfit(data25, 2025);
-    loadCount++;
-  }
+  // 2. D_강사급여
+  const d강사 = await fetchSheetData(SHEETS_CONFIG.강사급여);
+  if (d강사) { loadCount++; console.log('✅ D_강사급여 로드'); }
 
-  // 3. 마케팅 유입 데이터
-  const dataMkt = await fetchSheetData(SHEETS_CONFIG.marketing);
-  if (dataMkt) {
-    console.log('✅ 마케팅 유입 데이터 로드 (' + dataMkt.length + '행)');
-    loadCount++;
-  }
+  // 3. D_개인지출
+  const d개인 = await fetchSheetData(SHEETS_CONFIG.개인지출);
+  if (d개인) { loadCount++; console.log('✅ D_개인지출 로드'); }
 
-  // 4. 리체 학생 데이터
-  const dataStu = await fetchSheetData(SHEETS_CONFIG.students);
-  if (dataStu) {
-    console.log('✅ 리체 학생 데이터 로드 (' + dataStu.length + '행)');
-    loadCount++;
-  }
+  // 4. D_카드할부
+  const d할부 = await fetchSheetData(SHEETS_CONFIG.카드할부);
+  if (d할부) { loadCount++; console.log('✅ D_카드할부 로드'); }
 
-  // 5. 블로그 데이터
-  const dataBlog = await fetchSheetData(SHEETS_CONFIG.blog);
-  if (dataBlog) {
-    console.log('✅ 블로그 데이터 로드 (' + dataBlog.length + '행)');
-    loadCount++;
-  }
+  // 5. D_대출현황
+  const d대출 = await fetchSheetData(SHEETS_CONFIG.대출현황);
+  if (d대출) { loadCount++; console.log('✅ D_대출현황 로드'); }
 
-  // 6. 전단지 데이터
-  const dataFlyer = await fetchSheetData(SHEETS_CONFIG.flyer);
-  if (dataFlyer) {
-    console.log('✅ 전단지 데이터 로드 (' + dataFlyer.length + '행)');
-    loadCount++;
-  }
+  // 6. 광진 운영부 (학생 명단)
+  const d광진 = await fetchSheetData(SHEETS_CONFIG.광진운영);
+  if (d광진) { parseGwangjinRoster(d광진); loadCount++; }
+
+  // 7. 강동 운영부
+  const d강동 = await fetchSheetData(SHEETS_CONFIG.강동운영);
+  if (d강동) { parseGangdongRoster(d강동); loadCount++; }
+
+  // 8. 리체 운영부
+  const d리체 = await fetchSheetData(SHEETS_CONFIG.리체운영);
+  if (d리체) { loadCount++; console.log('✅ 리체운영 로드 (' + d리체.length + '행)'); }
+
+  // 9. 스카 운영부
+  const d스카 = await fetchSheetData(SHEETS_CONFIG.스카운영);
+  if (d스카) { parseSkaRoster(d스카); loadCount++; }
 
   // 차트 재그리기
   if (loadCount > 0) {
@@ -2258,14 +2301,17 @@ async function loadLiveData() {
   // 상태 표시
   if (statusEl) {
     if (loadCount > 0) {
-      statusEl.textContent = '🟢 실시간 연동 (' + loadCount + '개 시트)';
+      statusEl.textContent = '🟢 실시간 (' + loadCount + '개)';
       statusEl.style.color = '#00B894';
     } else {
       statusEl.textContent = '🔴 연동 실패';
       statusEl.style.color = '#D63031';
     }
   }
-  console.log(`📊 총 ${loadCount}개 시트 연동 완료`);
+  console.log('📊 총 ' + loadCount + '개 시트 연동 완료');
+  if (LIVE_ROSTER.gwangjin.length) console.log('  광진 ' + LIVE_ROSTER.gwangjin.length + '명 | 완납 ' + LIVE_ROSTER.gwangjin.filter(s=>s.paid).length + '명');
+  if (LIVE_ROSTER.gangdong.length) console.log('  강동 ' + LIVE_ROSTER.gangdong.length + '명');
+  if (LIVE_ROSTER.ska.length) console.log('  스카 ' + LIVE_ROSTER.ska.length + '명 | 리체회원 ' + LIVE_ROSTER.ska.filter(s=>s.isRiche).length + '명');
 }
 
 window.onload=()=>{
