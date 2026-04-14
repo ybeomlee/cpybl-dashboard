@@ -999,8 +999,9 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
         <th>상태</th>
         <th>방문</th>
         <th>상담자</th>
+        <th>상담결과</th>
       </tr></thead>
-      <tbody id="lcs-tbody"><tr><td colspan="12" style="text-align:center;padding:30px;color:var(--mu)">데이터 로딩 중...</td></tr></tbody>
+      <tbody id="lcs-tbody"><tr><td colspan="13" style="text-align:center;padding:30px;color:var(--mu)">데이터 로딩 중...</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -1909,10 +1910,10 @@ function refreshLcConsult() { lcConsultData=[]; loadLcConsult(); }
 async function loadLcConsult() {
   if (lcConsultData.length > 0) { renderLcConsult(); return; }
   const el = document.getElementById('lcs-tbody');
-  if(el) el.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--mu)">⏳ 로딩 중...</td></tr>';
+  if(el) el.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:20px;color:var(--mu)">⏳ 로딩 중...</td></tr>';
 
   if (location.protocol === 'file:') {
-    if(el) el.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#D63031">로컬에서는 불가 — GitHub Pages에서 확인하세요</td></tr>';
+    if(el) el.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:30px;color:#D63031">로컬에서는 불가 — GitHub Pages에서 확인하세요</td></tr>';
     return;
   }
 
@@ -1941,7 +1942,7 @@ async function loadLcConsult() {
       grade: r[3]||'', major: r[4]||'', phone: r[5]||'',
       parentPhone: r[6]||'', source: r[7]||'', keyword: r[8]||'',
       wishDate: r[9]||'', time: r[10]||'', status: r[11]||'',
-      visited: (r[12]||'').toUpperCase()==='TRUE', counselor: r[13]||''
+      visited: (r[12]||'').toUpperCase()==='TRUE', counselor: r[13]||'', result: r[14]||''
     }));
     lcConsultData.sort((a,b) => b.date.localeCompare(a.date));
     document.getElementById('lconsult-badge').textContent = lcConsultData.length;
@@ -1949,7 +1950,7 @@ async function loadLcConsult() {
     console.log('✅ 리체 상담현황 로드 (' + lcConsultData.length + '건)');
   } catch(e) {
     console.warn('리체 상담 로드 실패:', e);
-    if(el) el.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#D63031">데이터 로드 실패</td></tr>';
+    if(el) el.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:30px;color:#D63031">데이터 로드 실패</td></tr>';
   }
 }
 
@@ -1965,7 +1966,7 @@ function renderLcConsult() {
   document.getElementById('lcs-wait').textContent = wait + '건';
 
   if (data.length === 0) {
-    document.getElementById('lcs-tbody').innerHTML = '<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--mu)">해당 조건의 상담이 없습니다</td></tr>';
+    document.getElementById('lcs-tbody').innerHTML = '<tr><td colspan="13" style="text-align:center;padding:20px;color:var(--mu)">해당 조건의 상담이 없습니다</td></tr>';
     return;
   }
   document.getElementById('lcs-tbody').innerHTML = data.map(d => {
@@ -1989,6 +1990,7 @@ function renderLcConsult() {
       <td>${statusBadge}</td>
       <td>${visitBadge}</td>
       <td style="font-size:11px">${d.counselor}</td>
+      <td style="font-size:11px">${d.result}</td>
     </tr>`;
   }).join('');
 }
@@ -2251,6 +2253,8 @@ const SHEETS_CONFIG = {
   광진공무원: { id:'1vwAZ5jqwTQikCTVmwXKVGSOpcS6MAYR-tKypKwzYdnM', gid:'1917315530', enabled:true },
   강동운영: { id:'1vVxRIuTARKitueLRilqy1aH2uy_DeBwc0aZ2KNflFTs', gid:'1585085979', enabled:true },
   강동공무원: { id:'1vVxRIuTARKitueLRilqy1aH2uy_DeBwc0aZ2KNflFTs', gid:'1917315530', enabled:true },
+  광진편입: { id:'1vwAZ5jqwTQikCTVmwXKVGSOpcS6MAYR-tKypKwzYdnM', sheet:'편입', enabled:true },
+  강동편입: { id:'1vVxRIuTARKitueLRilqy1aH2uy_DeBwc0aZ2KNflFTs', sheet:'편입', enabled:true },
   리체운영: { id:'1TBBE_rRAko5BnP_UZwMwwfeDHP7t1P9UeX3I4NY5JYA', gid:'103453958', enabled:true },
   스카운영: { id:'1eGtRsnUXmesETILX3oh9udApCjOY20Tg16kcce5h6qs', gid:'0', enabled:true },
   // ═══ 기타 ═══
@@ -2332,7 +2336,7 @@ function updateProfitFromD(data) {
 }
 
 // ═══ 운영부 학생 명단 파싱 ═══
-const LIVE_ROSTER = { gwangjin:[], gangdong:[], riche:[], ska:[], gjGov:[], gdGov:[] };
+const LIVE_ROSTER = { gwangjin:[], gangdong:[], riche:[], ska:[], gjGov:[], gdGov:[], gjTransfer:[], gdTransfer:[] };
 
 function parseGwangjinRoster(data) {
   if (!data) return;
@@ -2418,6 +2422,26 @@ function parseGovRoster(data, key) {
     });
   });
   console.log(key + ' 공무원:', LIVE_ROSTER[key].length + '명');
+}
+
+// ═══ 편입 파싱 ═══
+function parseTransferRoster(data, key) {
+  if (!data) return;
+  LIVE_ROSTER[key] = [];
+  data.forEach(row => {
+    const status = (row[0]||'').trim();
+    const name = (row[1]||'').trim();
+    const school = (row[2]||'').trim();
+    if (!name || name==='이름' || name.length < 2 || name.length > 5) return;
+    if (!/^[가-힣]+$/.test(name)) return;
+    const amount = cleanNum(row[17]||row[15]||'0');
+    LIVE_ROSTER[key].push({
+      name, school, status,
+      amount, paid: status==='완납',
+      payDate: (row[18]||row[16]||'').trim()
+    });
+  });
+  if (LIVE_ROSTER[key].length) console.log(key + ' 편입:', LIVE_ROSTER[key].length + '명');
 }
 
 // ═══ 링크시트에서 최신 월 운영부 URL 자동 감지 ═══
@@ -2518,7 +2542,15 @@ async function loadLiveData() {
   const d강동공 = await fetchSheetData(SHEETS_CONFIG.강동공무원);
   if (d강동공) { parseGovRoster(d강동공, 'gdGov'); loadCount++; }
 
-  // 11. 리체 운영부
+  // 11. 광진 편입
+  const d광편 = await fetchSheetData(SHEETS_CONFIG.광진편입);
+  if (d광편) { parseTransferRoster(d광편, 'gjTransfer'); loadCount++; }
+
+  // 12. 강동 편입
+  const d강편 = await fetchSheetData(SHEETS_CONFIG.강동편입);
+  if (d강편) { parseTransferRoster(d강편, 'gdTransfer'); loadCount++; }
+
+  // 13. 리체 운영부
   const d리체 = await fetchSheetData(SHEETS_CONFIG.리체운영);
   if (d리체) { loadCount++; console.log('✅ 리체운영 로드 (' + d리체.length + '행)'); }
 
@@ -2547,6 +2579,8 @@ async function loadLiveData() {
   if (LIVE_ROSTER.gjGov.length) console.log('  광진 공무원 ' + LIVE_ROSTER.gjGov.length + '명 | 완납 ' + LIVE_ROSTER.gjGov.filter(s=>s.paid).length + '명');
   if (LIVE_ROSTER.gangdong.length) console.log('  강동 체대 ' + LIVE_ROSTER.gangdong.length + '명');
   if (LIVE_ROSTER.gdGov.length) console.log('  강동 공무원 ' + LIVE_ROSTER.gdGov.length + '명 | 완납 ' + LIVE_ROSTER.gdGov.filter(s=>s.paid).length + '명');
+  if (LIVE_ROSTER.gjTransfer.length) console.log('  광진 편입 ' + LIVE_ROSTER.gjTransfer.length + '명');
+  if (LIVE_ROSTER.gdTransfer.length) console.log('  강동 편입 ' + LIVE_ROSTER.gdTransfer.length + '명');
   if (LIVE_ROSTER.ska.length) console.log('  스카 ' + LIVE_ROSTER.ska.length + '명 | 리체회원 ' + LIVE_ROSTER.ska.filter(s=>s.isRiche).length + '명');
 }
 
