@@ -2244,9 +2244,13 @@ const SHEETS_CONFIG = {
   카드할부: { id:'1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o', sheet:'D_카드할부', enabled:true },
   대출현황: { id:'1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o', sheet:'D_대출현황', enabled:true },
   카드예상: { id:'1x5eE8DEmiC-5ump-_18FbfQw0XNDCpOQ4Sy7C9uCL_o', sheet:'D_카드예상지출', enabled:true },
-  // ═══ 운영부 파일 (학생 명단) ═══
+  // ═══ 운영부 파일 (자동 감지용 링크 시트) ═══
+  링크시트: { id:'1E1sVHYcahbGCLVWiwz1POyeoxA76pqRHy42X8Kw_fc4', gid:'0', enabled:true },
+  // 운영부는 링크시트에서 자동 감지 — 아래는 fallback
   광진운영: { id:'1vwAZ5jqwTQikCTVmwXKVGSOpcS6MAYR-tKypKwzYdnM', gid:'1585085979', enabled:true },
+  광진공무원: { id:'1vwAZ5jqwTQikCTVmwXKVGSOpcS6MAYR-tKypKwzYdnM', gid:'1917315530', enabled:true },
   강동운영: { id:'1vVxRIuTARKitueLRilqy1aH2uy_DeBwc0aZ2KNflFTs', gid:'1585085979', enabled:true },
+  강동공무원: { id:'1vVxRIuTARKitueLRilqy1aH2uy_DeBwc0aZ2KNflFTs', gid:'1917315530', enabled:true },
   리체운영: { id:'1TBBE_rRAko5BnP_UZwMwwfeDHP7t1P9UeX3I4NY5JYA', gid:'103453958', enabled:true },
   스카운영: { id:'1eGtRsnUXmesETILX3oh9udApCjOY20Tg16kcce5h6qs', gid:'0', enabled:true },
   // ═══ 기타 ═══
@@ -2328,7 +2332,7 @@ function updateProfitFromD(data) {
 }
 
 // ═══ 운영부 학생 명단 파싱 ═══
-const LIVE_ROSTER = { gwangjin:[], gangdong:[], riche:[], ska:[] };
+const LIVE_ROSTER = { gwangjin:[], gangdong:[], riche:[], ska:[], gjGov:[], gdGov:[] };
 
 function parseGwangjinRoster(data) {
   if (!data) return;
@@ -2393,6 +2397,81 @@ function parseSkaRoster(data) {
   console.log('스카 회원:', LIVE_ROSTER.ska.length + '명');
 }
 
+// ═══ 공무원 파싱 ═══
+function parseGovRoster(data, key) {
+  if (!data) return;
+  LIVE_ROSTER[key] = [];
+  data.forEach(row => {
+    const status = (row[0]||'').trim();
+    const type = (row[1]||'').trim(); // 소방/경찰
+    const name = (row[2]||'').trim();
+    const course = (row[3]||'').trim(); // 시즌/일반
+    if (!name || name==='이름' || name.length < 2 || name.length > 5) return;
+    if (!/^[가-힣]+$/.test(name)) return;
+    if (!type) return; // 직류가 없으면 스킵
+    const amount = cleanNum(row[15]||'0');
+    LIVE_ROSTER[key].push({
+      name, type, course, status,
+      amount, paid: status==='완납',
+      payDate: (row[16]||'').trim(),
+      payMethod: (row[17]||'').trim()
+    });
+  });
+  console.log(key + ' 공무원:', LIVE_ROSTER[key].length + '명');
+}
+
+// ═══ 링크시트에서 최신 월 운영부 URL 자동 감지 ═══
+async function autoDetectLatestMonth() {
+  const linkData = await fetchSheetData(SHEETS_CONFIG.링크시트);
+  if (!linkData) return null;
+
+  // 최신 월 찾기 (광진 URL이 있는 마지막 행)
+  let latest = null;
+  let gdFallback = null;
+  for (let i = linkData.length - 1; i >= 1; i--) {
+    const month = (linkData[i][0]||'').trim();
+    const gjUrl = (linkData[i][2]||'').trim();
+    if (month.match(/^\d{4}-\d{2}$/) && gjUrl) {
+      if (!latest) latest = { month, row: linkData[i] };
+      const gdUrl = (linkData[i][3]||'').trim();
+      if (gdUrl && !gdFallback) gdFallback = { month, row: linkData[i] };
+      if (latest && gdFallback) break;
+    }
+  }
+  if (!gdFallback) gdFallback = latest;
+
+  if (!latest) return null;
+
+  // URL에서 시트 ID 추출
+  const extractId = url => { const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/); return m ? m[1] : null; };
+
+  const result = { month: latest.month };
+
+  const gjId = extractId(latest.row[2] || '');
+  if (gjId) {
+    SHEETS_CONFIG.광진운영.id = gjId;
+    SHEETS_CONFIG.광진공무원.id = gjId;
+    result.gwangjin = gjId;
+  }
+
+  const gdId = extractId((latest.row[3] || gdFallback.row[3]) || '');
+  if (gdId) {
+    SHEETS_CONFIG.강동운영.id = gdId;
+    SHEETS_CONFIG.강동공무원.id = gdId;
+    result.gangdong = gdId;
+    result.gangdongMonth = gdFallback.month;
+  }
+
+  const lcId = extractId(latest.row[4] || '');
+  if (lcId) { SHEETS_CONFIG.리체운영.id = lcId; result.riche = lcId; }
+
+  const skId = extractId(latest.row[5] || '');
+  if (skId) { SHEETS_CONFIG.스카운영.id = skId; result.ska = skId; }
+
+  console.log('📅 최신 월: ' + result.month, result);
+  return result;
+}
+
 // ═══ 전체 데이터 로드 ═══
 async function loadLiveData() {
   let loadCount = 0;
@@ -2419,19 +2498,31 @@ async function loadLiveData() {
   const d대출 = await fetchSheetData(SHEETS_CONFIG.대출현황);
   if (d대출) { loadCount++; console.log('✅ D_대출현황 로드'); }
 
-  // 6. 광진 운영부 (학생 명단)
+  // 6. 링크시트에서 최신 월 자동 감지 → 운영부 ID 업데이트
+  const autoResult = await autoDetectLatestMonth();
+  if (autoResult) { loadCount++; }
+
+  // 7. 광진 운영부 (체대입시 학생)
   const d광진 = await fetchSheetData(SHEETS_CONFIG.광진운영);
   if (d광진) { parseGwangjinRoster(d광진); loadCount++; }
 
-  // 7. 강동 운영부
+  // 8. 광진 공무원
+  const d광진공 = await fetchSheetData(SHEETS_CONFIG.광진공무원);
+  if (d광진공) { parseGovRoster(d광진공, 'gjGov'); loadCount++; }
+
+  // 9. 강동 운영부 (체대입시 학생)
   const d강동 = await fetchSheetData(SHEETS_CONFIG.강동운영);
   if (d강동) { parseGangdongRoster(d강동); loadCount++; }
 
-  // 8. 리체 운영부
+  // 10. 강동 공무원
+  const d강동공 = await fetchSheetData(SHEETS_CONFIG.강동공무원);
+  if (d강동공) { parseGovRoster(d강동공, 'gdGov'); loadCount++; }
+
+  // 11. 리체 운영부
   const d리체 = await fetchSheetData(SHEETS_CONFIG.리체운영);
   if (d리체) { loadCount++; console.log('✅ 리체운영 로드 (' + d리체.length + '행)'); }
 
-  // 9. 스카 운영부
+  // 12. 스카 운영부
   const d스카 = await fetchSheetData(SHEETS_CONFIG.스카운영);
   if (d스카) { parseSkaRoster(d스카); loadCount++; }
 
@@ -2452,8 +2543,10 @@ async function loadLiveData() {
     }
   }
   console.log('📊 총 ' + loadCount + '개 시트 연동 완료');
-  if (LIVE_ROSTER.gwangjin.length) console.log('  광진 ' + LIVE_ROSTER.gwangjin.length + '명 | 완납 ' + LIVE_ROSTER.gwangjin.filter(s=>s.paid).length + '명');
-  if (LIVE_ROSTER.gangdong.length) console.log('  강동 ' + LIVE_ROSTER.gangdong.length + '명');
+  if (LIVE_ROSTER.gwangjin.length) console.log('  광진 체대 ' + LIVE_ROSTER.gwangjin.length + '명 | 완납 ' + LIVE_ROSTER.gwangjin.filter(s=>s.paid).length + '명');
+  if (LIVE_ROSTER.gjGov.length) console.log('  광진 공무원 ' + LIVE_ROSTER.gjGov.length + '명 | 완납 ' + LIVE_ROSTER.gjGov.filter(s=>s.paid).length + '명');
+  if (LIVE_ROSTER.gangdong.length) console.log('  강동 체대 ' + LIVE_ROSTER.gangdong.length + '명');
+  if (LIVE_ROSTER.gdGov.length) console.log('  강동 공무원 ' + LIVE_ROSTER.gdGov.length + '명 | 완납 ' + LIVE_ROSTER.gdGov.filter(s=>s.paid).length + '명');
   if (LIVE_ROSTER.ska.length) console.log('  스카 ' + LIVE_ROSTER.ska.length + '명 | 리체회원 ' + LIVE_ROSTER.ska.filter(s=>s.isRiche).length + '명');
 }
 
