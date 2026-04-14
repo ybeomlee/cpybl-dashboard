@@ -568,7 +568,7 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
   <!-- 스카 + 차트 -->
   <div style="display:flex;flex-direction:column;gap:12px">
     <div class="card">
-      <div class="ch"><div class="ct">스카 매출 비중 (3월)</div><div class="csm">총 5,410,000원</div></div>
+      <div class="ch"><div class="ct" id="sca-title">스카 매출 비중 (4월)</div><div class="csm" id="sca-total-label">실시간</div></div>
       <div style="display:flex;align-items:center;gap:14px">
         <div style="flex-shrink:0;width:110px;height:110px;position:relative"><canvas id="sca-pie"></canvas></div>
         <div style="flex:1">
@@ -576,16 +576,16 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
             <div style="width:10px;height:10px;border-radius:50%;background:#A29BFE"></div>
             <div>
               <div style="font-size:11px;color:var(--mu)">일반 스카</div>
-              <div style="font-size:16px;font-weight:900">3,930,000원</div>
-              <div style="font-size:10px;color:var(--mu)">72.6%</div>
+              <div style="font-size:16px;font-weight:900" id="sca-general-val">-</div>
+              <div style="font-size:10px;color:var(--mu)" id="sca-general-pct">-</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <div style="width:10px;height:10px;border-radius:50%;background:#6C5CE7"></div>
             <div>
               <div style="font-size:11px;color:var(--mu)">리체연계 스카</div>
-              <div style="font-size:16px;font-weight:900;color:var(--p2)">1,480,000원</div>
-              <div style="font-size:10px;color:var(--mu)">27.4%</div>
+              <div style="font-size:16px;font-weight:900;color:var(--p2)" id="sca-riche-val">-</div>
+              <div style="font-size:10px;color:var(--mu)" id="sca-riche-pct">-</div>
             </div>
           </div>
         </div>
@@ -1716,7 +1716,35 @@ function drawGd(){mkChart("gd-ch",{type:"line",data:{labels:LABS12,datasets:buil
 function drawLc(){mkChart("lc-ch",{type:"line",data:{labels:LABS12,datasets:buildLine(lcYrs,"리체")},options:campusOpts()});}
 
 function drawScaPie(){
-  mkChart("sca-pie",{type:"doughnut",data:{labels:["일반 스카","리체연계"],datasets:[{data:[3930000,1480000],backgroundColor:["#A29BFE","#6C5CE7"],borderColor:["#A29BFE","#6C5CE7"],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${(c.parsed/10000).toFixed(0)}만원 (${(c.parsed/5410000*100).toFixed(1)}%)`}}}}}  );
+  // 실시간 데이터에서 스카 매출 계산
+  let richeTotal = 0, generalTotal = 0;
+  if (LIVE_ROSTER.ska.length) {
+    LIVE_ROSTER.ska.forEach(s => {
+      if (s.isRiche) richeTotal += s.amount;
+      else generalTotal += s.amount;
+    });
+  } else {
+    // fallback
+    richeTotal = 4602500; generalTotal = 85000;
+  }
+  const total = richeTotal + generalTotal;
+
+  // KPI 업데이트
+  const skaKpiEl = document.querySelector('#pg-lc .kv');
+  // 범례 업데이트
+  const labels = document.querySelectorAll('#pg-lc .card');
+
+  mkChart("sca-pie",{type:"doughnut",data:{labels:["일반 스카","리체연계"],datasets:[{data:[generalTotal,richeTotal],backgroundColor:["#A29BFE","#6C5CE7"],borderColor:["#A29BFE","#6C5CE7"],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${(c.parsed/10000).toFixed(0)}만원 (${total>0?(c.parsed/total*100).toFixed(1):0}%)`}}}}}  );
+  // 범례 업데이트
+  const fmt = n => n.toLocaleString() + '원';
+  const pct = (n,t) => t>0 ? (n/t*100).toFixed(1)+'%' : '-';
+  const el = id => document.getElementById(id);
+  if(el('sca-total-label')) el('sca-total-label').textContent = '총 ' + fmt(total);
+  if(el('sca-general-val')) el('sca-general-val').textContent = fmt(generalTotal);
+  if(el('sca-general-pct')) el('sca-general-pct').textContent = pct(generalTotal,total);
+  if(el('sca-riche-val')) el('sca-riche-val').textContent = fmt(richeTotal);
+  if(el('sca-riche-pct')) el('sca-riche-pct').textContent = pct(richeTotal,total);
+  console.log('스카 차트: 리체연계 ' + (richeTotal/10000).toFixed(0) + '만 / 일반 ' + (generalTotal/10000).toFixed(0) + '만');
 }
 
 // PROFIT
