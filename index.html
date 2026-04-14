@@ -231,7 +231,8 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
   <button class="ni" id="ni-gj" onclick="go(this,'gj','팀무광진','2026-04 현황')"><span class="ni-ic">◈</span>팀무광진<span class="ni-bd">25</span></button>
   <button class="ni" id="ni-gd" onclick="go(this,'gd','팀무강동','2026-03 현황')"><span class="ni-ic">◈</span>팀무강동<span class="ni-bd">144</span></button>
   <button class="ni" id="ni-lc" onclick="go(this,'lc','리드체인지','2026-04 현황')"><span class="ni-ic">◈</span>리드체인지<span class="ni-bd">40</span></button>
-  <button class="ni" id="ni-consult" onclick="go(this,'consult','상담 현황','실시간');refreshConsult()"><span class="ni-ic">☎</span>상담 현황<span class="ni-bd" id="consult-badge">-</span></button>
+  <button class="ni" id="ni-consult" onclick="go(this,'consult','팀무 상담현황','실시간');refreshConsult()"><span class="ni-ic">☎</span>팀무 상담현황<span class="ni-bd" id="consult-badge">-</span></button>
+  <button class="ni" id="ni-lconsult" onclick="go(this,'lconsult','리체 상담현황','실시간');refreshLcConsult()"><span class="ni-ic">☎</span>리체 상담현황<span class="ni-bd" id="lconsult-badge">-</span></button>
   <div class="sb-sec">결산</div>
   <button class="ni" id="ni-profit" onclick="go(this,'profit','순수익 현황','2024~2026 비교')"><span class="ni-ic">↑</span>순수익 현황</button>
   <button class="ni" id="ni-expense" onclick="go(this,'expense','지출 내역','전월 대비')"><span class="ni-ic">≡</span>지출 내역</button>
@@ -924,7 +925,7 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
 
 <!-- ══ 상담현황 ══ -->
 <div class="pg" id="pg-consult">
-<div class="stt">팀무브먼트 상담 현황</div>
+<div class="stt">팀무 상담 현황</div>
 <div class="sts">구글시트 실시간 연동 · 새로고침 시 최신 데이터 반영</div>
 
 <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
@@ -963,6 +964,47 @@ aside{width:210px;background:var(--sb-bg);height:100vh;display:flex;flex-directi
   </div>
 </div>
 </div><!-- /consult -->
+
+<!-- ══ 리체 상담현황 ══ -->
+<div class="pg" id="pg-lconsult">
+<div class="stt">리체 상담 현황</div>
+<div class="sts">구글시트 실시간 연동 · 뉴상담예약 시트</div>
+
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+  <div class="ptabs" id="lcs-filter-tabs" style="margin-bottom:0">
+    <button class="ptab on" onclick="filterLcConsult('all',this)">전체</button>
+    <button class="ptab" onclick="filterLcConsult('예약대기',this)">예약대기</button>
+    <button class="ptab" onclick="filterLcConsult('상담완료',this)">상담완료</button>
+  </div>
+  <div style="display:flex;gap:8px;font-size:12px">
+    <span>전체 <b id="lcs-total">-</b></span>
+    <span style="color:#4A00E0">완료 <b id="lcs-done">-</b></span>
+    <span style="color:#D63031">대기 <b id="lcs-wait">-</b></span>
+  </div>
+</div>
+
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="tbl" id="lcs-table">
+      <thead><tr>
+        <th>작성시간</th>
+        <th>이름</th>
+        <th>학교</th>
+        <th>학년</th>
+        <th>전공</th>
+        <th>연락처</th>
+        <th>유입경로</th>
+        <th>희망날짜</th>
+        <th>상담시간</th>
+        <th>상태</th>
+        <th>방문</th>
+        <th>상담자</th>
+      </tr></thead>
+      <tbody id="lcs-tbody"><tr><td colspan="12" style="text-align:center;padding:30px;color:var(--mu)">데이터 로딩 중...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+</div><!-- /lconsult -->
 
 <!-- ══ MARKETING ══ -->
 <div class="pg" id="pg-mkt">
@@ -1855,6 +1897,107 @@ function filterConsult(f, btn) {
   document.querySelectorAll('#cs-filter-tabs .ptab').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
   renderConsult();
+}
+
+// ═══ 리체 상담현황 ═══
+const LC_CONSULT_URL = 'https://docs.google.com/spreadsheets/d/1o0KFtp19Py4K7FN28dIGkXNcD3F4uNgcnezXk2n3Q00/gviz/tq?tqx=out:csv&gid=354492270';
+let lcConsultData = [];
+let lcConsultFilter = 'all';
+
+function refreshLcConsult() { lcConsultData=[]; loadLcConsult(); }
+
+async function loadLcConsult() {
+  if (lcConsultData.length > 0) { renderLcConsult(); return; }
+  const el = document.getElementById('lcs-tbody');
+  if(el) el.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--mu)">⏳ 로딩 중...</td></tr>';
+
+  if (location.protocol === 'file:') {
+    if(el) el.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#D63031">로컬에서는 불가 — GitHub Pages에서 확인하세요</td></tr>';
+    return;
+  }
+
+  try {
+    const res = await fetch(LC_CONSULT_URL + '&_t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    if (text.trim().startsWith('<!')) throw new Error('HTML 반환');
+
+    const lines = text.split('\n').filter(l=>l.trim());
+    const parseRow = line => {
+      const cols=[]; let cur='',inQ=false;
+      for(let i=0;i<line.length;i++){
+        const c=line[i];
+        if(c==='"'){inQ=!inQ;continue;}
+        if(c===','&&!inQ){cols.push(cur.trim());cur='';continue;}
+        cur+=c;
+      }
+      cols.push(cur.trim());
+      return cols;
+    };
+
+    const dataRows = lines.slice(1).map(parseRow).filter(r=>r[1]&&r[1].trim());
+    lcConsultData = dataRows.map(r => ({
+      date: r[0]||'', name: r[1]||'', school: r[2]||'',
+      grade: r[3]||'', major: r[4]||'', phone: r[5]||'',
+      parentPhone: r[6]||'', source: r[7]||'', keyword: r[8]||'',
+      wishDate: r[9]||'', time: r[10]||'', status: r[11]||'',
+      visited: (r[12]||'').toUpperCase()==='TRUE', counselor: r[13]||''
+    }));
+    lcConsultData.sort((a,b) => b.date.localeCompare(a.date));
+    document.getElementById('lconsult-badge').textContent = lcConsultData.length;
+    renderLcConsult();
+    console.log('✅ 리체 상담현황 로드 (' + lcConsultData.length + '건)');
+  } catch(e) {
+    console.warn('리체 상담 로드 실패:', e);
+    if(el) el.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#D63031">데이터 로드 실패</td></tr>';
+  }
+}
+
+function renderLcConsult() {
+  const data = lcConsultFilter === 'all' ? lcConsultData :
+    lcConsultData.filter(d => d.status.includes(lcConsultFilter));
+
+  const total = lcConsultData.length;
+  const done = lcConsultData.filter(d => d.status.includes('완료')).length;
+  const wait = lcConsultData.filter(d => d.status.includes('대기')).length;
+  document.getElementById('lcs-total').textContent = total + '건';
+  document.getElementById('lcs-done').textContent = done + '건';
+  document.getElementById('lcs-wait').textContent = wait + '건';
+
+  if (data.length === 0) {
+    document.getElementById('lcs-tbody').innerHTML = '<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--mu)">해당 조건의 상담이 없습니다</td></tr>';
+    return;
+  }
+  document.getElementById('lcs-tbody').innerHTML = data.map(d => {
+    const statusBadge = d.status.includes('완료')
+      ? `<span class="badge b-paid">${d.status}</span>`
+      : `<span class="badge b-red">${d.status||'대기'}</span>`;
+    const visitBadge = d.visited
+      ? `<span class="badge b-paid">O</span>`
+      : `<span class="badge b-red">X</span>`;
+    const rowBg = !d.status.includes('완료') ? 'background:#FFF8F8;' : '';
+    return `<tr style="${rowBg}">
+      <td style="font-size:11px">${d.date}</td>
+      <td style="font-weight:700">${d.name}</td>
+      <td>${d.school}</td>
+      <td>${d.grade}</td>
+      <td>${d.major}</td>
+      <td style="font-size:11px">${d.phone}</td>
+      <td>${d.source}</td>
+      <td style="font-size:11px">${d.wishDate}</td>
+      <td style="font-size:11px">${d.time}</td>
+      <td>${statusBadge}</td>
+      <td>${visitBadge}</td>
+      <td style="font-size:11px">${d.counselor}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterLcConsult(f, btn) {
+  lcConsultFilter = f;
+  document.querySelectorAll('#lcs-filter-tabs .ptab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderLcConsult();
 }
 
 // PANEL TOGGLE (mobile)
